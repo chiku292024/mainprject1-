@@ -7,7 +7,322 @@
 <body>
 
     <h1>Welcome to Admin Panel</h1>
-    <a href="index.html">Logout</a>
+    <a href="index.html">Logout</a> 
 
+   
+    <div class="dashboard">
+        <div>
+        <h3> Total no of Students: 100</h3>
+        <a href = "students.html">Manage Students</a></div>
+        <div>
+        <h3> Total no of Teachers: 20</h3>
+        <a href = "teachers.html">Manage Teachers</a></div>
+        <div>
+        <h3> Total no of Courses: 10</h3>
+        <a href = "courses.html">Manage Courses</a></div>
+        <div>
+        <h3> Total no of Classes: 15</h3>
+        <a href = "classes.html">Manage Classes</a></div>
+        <div>
+        <h3> Total no of Divisions: 5</h3>
+        <a href = "divisions.html">Manage Divisions</a></div>
+    </div>
+    <br> <br>
+ <p>To generate a timetable, click the button below:</p><br>
+    <a href="timetable_generator.html" class =mk>Generate Timetable</a>
+    <style>
+        
+
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: Arial, sans-serif;
+    }
+
+    body {
+        min-height: 100vh;
+        background: #eef4ff;
+        padding: 40px;
+
+        text-align: center;
+
+        /* NEW: Flexbox to center everything vertically and horizontally */
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+
+        position: relative;
+        overflow-x: hidden;
+    }
+
+    /* Background animation */
+
+    body::before {
+        content: "";
+
+        position: fixed;
+
+        width: 500px;
+        height: 500px;
+
+        background: #c7dcff;
+
+        border-radius: 50%;
+
+        top: -200px;
+        right: -150px;
+
+        z-index: -1;
+
+        animation: move 8s ease-in-out infinite alternate;
+    }
+
+    body::after {
+        content: "";
+
+        position: fixed;
+
+        width: 400px;
+        height: 400px;
+
+        background: #d8f3ff;
+
+        border-radius: 50%;
+
+        bottom: -180px;
+        left: -120px;
+
+        z-index: -1;
+
+        animation: move 10s ease-in-out infinite alternate-reverse;
+    }
+
+    @keyframes move {
+
+        from {
+            transform: translate(0, 0);
+        }
+
+        to {
+            transform: translate(-30px, 30px);
+        }
+
+    }
+
+
+    /* Main Heading */
+
+    h1 {
+        color: #173b70;
+
+        font-size: 30px;
+
+        margin-bottom: 25px;
+    }
+
+
+    /* Logout button - top right corner */
+
+    body > a:first-of-type {
+
+        position: absolute;
+
+        top: 25px;
+        right: 35px;
+
+        padding: 10px 20px;
+
+        background: #2864c7;
+
+        color: white;
+
+        text-decoration: none;
+
+        border-radius: 8px;
+
+        font-size: 15px;
+
+        transition: 0.3s;
+    }
+
+    body > a:first-of-type:hover {
+
+        background: #173f85;
+
+        transform: translateY(-2px);
+    }
+
+
+    /* Generate Timetable paragraph */
+
+    p {
+        color: #333;
+
+        font-size: 16px;
+
+        margin-bottom: 10px;
+    }
+
+
+    /* Generate Timetable button */
+
+    body > a:nth-of-type(2) {
+
+        display: inline-block;
+
+        padding: 12px 24px;
+
+        background: #2864c7;
+
+        color: white;
+
+        text-decoration: none;
+
+        border-radius: 8px;
+
+        font-size: 16px;
+
+        transition: 0.3s;
+
+        margin-bottom: 35px;
+    }
+
+    body > a:nth-of-type(2):hover {
+
+        background: #173f85;
+
+        transform: translateY(-2px);
+    }
+
+
+    /* Dashboard cards */
+
+    body > div {
+
+        max-width: 1100px;
+
+        width: 100%; /* NEW: Ensures it uses the full width up to max-width */
+
+        margin: auto;
+
+        display: grid;
+
+        grid-template-columns: repeat(3, 1fr);
+
+        gap: 20px;
+
+        /* NEW: Centers the grid items themselves inside the container */
+        justify-items: center; 
+    }
+
+
+    /* Individual cards */
+
+    body > div > div {
+
+        background: white;
+
+        padding: 25px;
+
+        border-radius: 14px;
+
+        box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+
+        transition: 0.3s;
+
+        /* NEW: Ensures the card takes full width of its grid column */
+        width: 100%; 
+    }
+
+
+    body > div > div:hover {
+
+        transform: translateY(-5px);
+
+        box-shadow: 0 12px 30px rgba(0, 0, 0, 0.12);
+    }
+
+
+    /* Card headings */
+
+    h3 {
+
+        color: #173b70;
+
+        font-size: 18px;
+
+        margin-bottom: 18px;
+    }
+
+
+    /* Manage buttons */
+
+    body > div > div a {
+
+        display: inline-block;
+
+        padding: 9px 16px;
+
+        background: #2864c7;
+
+        color: white;
+
+        text-decoration: none;
+
+        border-radius: 7px;
+
+        font-size: 14px;
+
+        transition: 0.3s;
+    }
+
+
+    body > div > div a:hover {
+
+        background: #173f85;
+    }
+
+
+    /* Responsive */
+
+    @media (max-width: 800px) {
+
+        body > div {
+
+            grid-template-columns: repeat(2, 1fr);
+        }
+
+    }
+
+
+    @media (max-width: 550px) {
+
+        body {
+
+            padding: 20px;
+        }
+
+        body > div {
+
+            grid-template-columns: 1fr;
+        }
+
+        body > a:first-of-type {
+
+            top: 15px;
+            right: 15px;
+
+            padding: 8px 14px;
+
+            font-size: 13px;
+        }
+
+    }
+
+</style>
+
+</style>
 </body>
 </html>
