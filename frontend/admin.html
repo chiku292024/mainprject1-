@@ -1,0 +1,813 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Admin Panel</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: Arial, sans-serif; }
+
+        body {
+            min-height: 100vh;
+            background: #eef4ff;
+            padding: 30px 40px 40px;
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: ""; position: fixed; width: 500px; height: 500px;
+            background: #c7dcff; border-radius: 50%; top: -200px; right: -150px;
+            z-index: -1; animation: move 8s ease-in-out infinite alternate;
+        }
+        body::after {
+            content: ""; position: fixed; width: 400px; height: 400px;
+            background: #d8f3ff; border-radius: 50%; bottom: -180px; left: -120px;
+            z-index: -1; animation: move 10s ease-in-out infinite alternate-reverse;
+        }
+        @keyframes move {
+            from { transform: translate(0, 0); }
+            to   { transform: translate(-30px, 30px); }
+        }
+
+        .top-bar {
+            width: 100%; max-width: 1100px;
+            display: flex; justify-content: flex-end; align-items: center;
+            gap: 12px; margin-bottom: 34px; flex-wrap: wrap;
+            padding: 0;
+            background: transparent;
+            border: none;
+            box-shadow: none;
+        }
+
+        .top-bar a {
+            display: inline-flex; align-items: center; gap: 8px;
+            padding: 10px 20px; border-radius: 10px;
+            font-size: 14.5px; font-weight: 600;
+            text-decoration: none; color: white;
+            transition: all 0.25s ease;
+            white-space: nowrap;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .top-bar a.btn-timetable {
+            background: linear-gradient(135deg, #2864c7 0%, #4a8bff 100%);
+            box-shadow: 0 6px 14px rgba(40, 100, 199, 0.30);
+        }
+        .top-bar a.btn-timetable:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(40, 100, 199, 0.40);
+            background: linear-gradient(135deg, #173f85 0%, #2864c7 100%);
+        }
+
+        .top-bar a.btn-logout {
+            background: linear-gradient(135deg, #e74c3c 0%, #ff6b5b 100%);
+            box-shadow: 0 6px 14px rgba(231, 76, 60, 0.30);
+        }
+        .top-bar a.btn-logout:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(231, 76, 60, 0.40);
+            background: linear-gradient(135deg, #c0392b 0%, #e74c3c 100%);
+        }
+
+        .top-bar a::after {
+            content: "";
+            position: absolute; top: 0; left: -75%;
+            width: 50%; height: 100%;
+            background: linear-gradient(120deg,
+                transparent, rgba(255,255,255,0.35), transparent);
+            transform: skewX(-20deg);
+            transition: left 0.6s ease;
+        }
+        .top-bar a:hover::after { left: 125%; }
+
+        .hero {
+            width: 100%;
+            max-width: 1100px;
+            margin-bottom: 45px;
+            padding: 32px 34px;
+            border-radius: 20px;
+            background: linear-gradient(135deg, #2864c7 0%, #4a8bff 50%, #6aa8ff 100%);
+            box-shadow:
+                0 14px 32px rgba(40, 100, 199, 0.30),
+                inset 0 0 0 1px rgba(255,255,255,0.15);
+            position: relative;
+            overflow: hidden;
+            text-align: left;
+            animation: heroFade 0.7s ease-out;
+        }
+
+        .hero::before,
+        .hero::after {
+            content: "";
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(255,255,255,0.15);
+            pointer-events: none;
+        }
+        .hero::before {
+            width: 240px; height: 240px;
+            top: -100px; right: -60px;
+        }
+        .hero::after {
+            width: 160px; height: 160px;
+            bottom: -80px; left: 30%;
+            background: rgba(255,255,255,0.10);
+        }
+
+        .hero h1 {
+            color: #ffffff;
+            font-size: 34px;
+            font-weight: 700;
+            letter-spacing: 0.4px;
+            margin: 0 0 8px 0;
+            position: relative;
+            z-index: 1;
+            text-shadow: 0 2px 8px rgba(0,0,0,0.12);
+        }
+        .hero h1 span {
+            background: linear-gradient(90deg, #ffffff 0%, #d8ecff 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            color: transparent;
+        }
+
+        .hero-sub {
+            color: rgba(255,255,255,0.9);
+            font-size: 15px;
+            font-weight: 500;
+            margin: 0;
+            position: relative;
+            z-index: 1;
+            letter-spacing: 0.2px;
+        }
+
+        @keyframes heroFade {
+            from { opacity: 0; transform: translateY(-10px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        .dashboard {
+            max-width: 1100px; width: 100%;
+            display: grid; grid-template-columns: repeat(3, 1fr);
+            gap: 22px; margin-bottom: 45px;
+        }
+
+        .dashboard > div {
+            background: white; padding: 28px 22px; border-radius: 16px;
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08); transition: 0.3s;
+            width: 100%; display: flex; flex-direction: column;
+            align-items: center; justify-content: space-between; min-height: 150px;
+        }
+        .dashboard > div:hover {
+            transform: translateY(-6px);
+            box-shadow: 0 14px 32px rgba(0, 0, 0, 0.12);
+        }
+
+        .dashboard h3 {
+            color: #173b70; font-size: 18px; margin-bottom: 18px; line-height: 1.4;
+        }
+        .dashboard h3 span { color: #2864c7; font-weight: 700; }
+
+        .dashboard > div a {
+            display: inline-block; padding: 10px 18px; background: #2864c7;
+            color: white; text-decoration: none; border-radius: 8px;
+            font-size: 14px; font-weight: 500; transition: 0.3s;
+            box-shadow: 0 3px 8px rgba(40, 100, 199, 0.2);
+        }
+        .dashboard > div a:hover {
+            background: #173f85; transform: translateY(-2px);
+            box-shadow: 0 5px 12px rgba(40, 100, 199, 0.3);
+        }
+
+        .bottom-section {
+            display: flex; flex-direction: column;
+            align-items: center; gap: 15px; width: 100%;
+            margin-bottom: 45px;
+        }
+
+        .mk {
+            display: inline-block; padding: 13px 30px; background: #2864c7;
+            color: white; text-decoration: none; border-radius: 8px;
+            font-size: 16px; font-weight: 500; transition: 0.3s;
+            min-width: 240px; box-shadow: 0 4px 10px rgba(40, 100, 199, 0.25);
+        }
+        .mk:hover {
+            background: #173f85; transform: translateY(-3px);
+            box-shadow: 0 8px 16px rgba(40, 100, 199, 0.35);
+        }
+
+        p { color: #333; font-size: 16px; margin-bottom: 8px; font-weight: 500; }
+
+        .explorer {
+            max-width: 1100px; width: 100%;
+            background: white; border-radius: 16px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.08);
+            padding: 26px 24px; text-align: left;
+            margin-bottom: 40px;
+        }
+        .explorer h2 {
+            color: #173b70; font-size: 22px; margin-bottom: 18px;
+        }
+
+        .explorer .label {
+            color: #527a9b; font-size: 13px; font-weight: 600;
+            text-transform: uppercase; letter-spacing: 0.5px;
+            margin-bottom: 6px; display: block;
+        }
+
+        .drill-row {
+            display: grid; grid-template-columns: repeat(4, 1fr);
+            gap: 14px; margin-bottom: 18px;
+        }
+        .drill-row select {
+            padding: 12px 14px; border: 1px solid #cfe0f2; border-radius: 8px;
+            font-size: 14px; outline: none; color: #173b70; background: white;
+            transition: 0.3s; width: 100%;
+        }
+        .drill-row select:focus {
+            border-color: #2864c7; box-shadow: 0 0 0 3px rgba(40,100,199,0.15);
+        }
+        .drill-row select:disabled {
+            background: #f3f7fb; color: #9bb0c2; cursor: not-allowed;
+        }
+
+        .free-search {
+            display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 14px;
+        }
+        .free-search input {
+            flex: 1; min-width: 220px;
+            padding: 12px 16px; border: 1px solid #cfe0f2; border-radius: 8px;
+            font-size: 15px; outline: none; color: #173b70;
+            transition: 0.3s;
+        }
+        .free-search input:focus {
+            border-color: #2864c7; box-shadow: 0 0 0 3px rgba(40,100,199,0.15);
+        }
+        .free-search button {
+            padding: 12px 22px; background: #2864c7; color: white; border: none;
+            border-radius: 8px; font-size: 15px; font-weight: 500;
+            cursor: pointer; transition: 0.3s;
+            box-shadow: 0 4px 10px rgba(40, 100, 199, 0.25);
+        }
+        .free-search button:hover { background: #173f85; transform: translateY(-2px); }
+
+        .chips {
+            display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px;
+        }
+        .chip {
+            background: #eef4ff; color: #2864c7; font-size: 13px;
+            padding: 6px 12px; border-radius: 20px; font-weight: 600;
+            border: 1px solid #cfe0f2;
+        }
+        .chip .x {
+            margin-left: 8px; cursor: pointer; color: #e74c3c;
+            font-weight: 700;
+        }
+
+        .result-info {
+            color: #527a9b; font-size: 14px; margin-bottom: 14px;
+            display: flex; justify-content: space-between; align-items: center;
+            flex-wrap: wrap; gap: 8px;
+        }
+        .scroll-hint {
+            color: #7a94a8; font-size: 12.5px; font-style: italic;
+            display: flex; align-items: center; gap: 6px;
+        }
+
+        .table-wrap {
+            max-height: 360px;
+            overflow-y: auto;
+            overflow-x: hidden;
+            border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            border: 1px solid #e2ecf7;
+            position: relative;
+        }
+
+        .table-wrap::-webkit-scrollbar { width: 10px; }
+        .table-wrap::-webkit-scrollbar-track {
+            background: #f3f7fb; border-radius: 12px;
+        }
+        .table-wrap::-webkit-scrollbar-thumb {
+            background: #c7dcff; border-radius: 12px;
+            border: 2px solid #f3f7fb;
+        }
+        .table-wrap::-webkit-scrollbar-thumb:hover { background: #2864c7; }
+
+        table {
+            width: 100%; border-collapse: collapse;
+        }
+        thead th {
+            background: #2864c7; color: white;
+            position: sticky; top: 0;
+            z-index: 2;
+            padding: 12px 14px; text-align: left; font-size: 14px;
+        }
+        tbody td {
+            padding: 11px 14px; font-size: 14px;
+            text-align: left; color: #173b70;
+            border-bottom: 1px solid #eaf1fa;
+        }
+        tbody tr:nth-child(even) { background: #f9fcff; }
+        tbody tr:hover { background: #eef4ff; }
+
+        .badge {
+            display: inline-block; padding: 3px 10px; border-radius: 20px;
+            font-size: 12px; font-weight: 600;
+        }
+        .badge.student  { background: #dcecff; color: #2864c7; }
+        .badge.teacher  { background: #e6f7e6; color: #1e8e3e; }
+        .badge.course   { background: #fff2cc; color: #b06f00; }
+        .badge.class    { background: #ffe1e1; color: #c0392b; }
+        .badge.division { background: #efe3ff; color: #7b3fbf; }
+
+        .del-row {
+            padding: 6px 12px; background: #e74c3c; color: white;
+            border: none; border-radius: 6px; font-size: 12px;
+            font-weight: 500; cursor: pointer; transition: 0.3s;
+        }
+        .del-row:hover { background: #c0392b; }
+
+        .empty-row td {
+            text-align: center; color: #7a94a8; padding: 24px;
+            font-style: italic;
+        }
+
+        .table-wrap::after {
+            content: "";
+            position: sticky;
+            bottom: 0; left: 0; right: 0;
+            display: block; height: 20px;
+            background: linear-gradient(to bottom, transparent, rgba(255,255,255,0.9));
+            pointer-events: none;
+        }
+
+        @media (max-width: 800px) {
+            .hero { padding: 26px 24px; border-radius: 18px; }
+            .hero h1 { font-size: 28px; }
+            .hero-sub { font-size: 14px; }
+            .dashboard { grid-template-columns: repeat(2, 1fr); }
+            .top-bar { justify-content: center; }
+            .drill-row { grid-template-columns: repeat(2, 1fr); }
+            .table-wrap { max-height: 320px; }
+        }
+        @media (max-width: 550px) {
+            body { padding: 20px; }
+            .hero { padding: 22px 18px; margin-bottom: 32px; }
+            .hero h1 { font-size: 22px; }
+            .hero-sub { font-size: 13px; }
+            .dashboard { grid-template-columns: 1fr; }
+            .top-bar { flex-direction: column; align-items: stretch; gap: 10px; }
+            .top-bar a { width: 100%; justify-content: center; }
+            .mk { width: 100%; min-width: unset; }
+            .drill-row { grid-template-columns: 1fr; }
+            th, td { font-size: 12px; padding: 8px; }
+            .table-wrap { max-height: 280px; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="top-bar">
+        <a href="timetable.html" class="btn-timetable">📅 View Timetable</a>
+        <a href="index.html" class="btn-logout">🚪 Logout</a>
+    </div>
+
+    <div class="hero">
+        <h1>Welcome to <span>Admin Panel</span></h1>
+        <p class="hero-sub">Manage students, faculty, courses, classes, and divisions — all in one place.</p>
+    </div>
+
+    <div class="dashboard">
+        <div>
+            <h3>Total Students: <span id="studentCount">0</span></h3>
+            <a href="students.html">Manage Students</a>
+        </div>
+        <div>
+            <h3>Total Faculty: <span id="teacherCount">0</span></h3>
+            <a href="teachers.html">Manage Faculty</a>
+        </div>
+        <div>
+            <h3>Total Courses: <span id="courseCount">0</span></h3>
+            <a href="courses.html">Manage Courses</a>
+        </div>
+        <div>
+            <h3>Total Classes: <span id="classCount">0</span></h3>
+            <a href="classes.html">Manage Classes</a>
+        </div>
+        <div>
+            <h3>Total Divisions: <span id="divisionCount">0</span></h3>
+            <a href="divisions.html">Manage Divisions</a>
+        </div>
+    </div>
+
+    <div class="bottom-section">
+        <p>To generate a timetable, click the button below:</p>
+        <a href="timetable_generator.html" class="mk">Generate Timetable</a>
+    </div>
+
+    <div class="explorer">
+        <h2>🔎 Smart Search & Manage</h2>
+
+        <div class="drill-row">
+            <div>
+                <span class="label">Course</span>
+                <select id="fCourse" onchange="onCourseChange()">
+                    <option value="">All Courses</option>
+                </select>
+            </div>
+            <div>
+                <span class="label">Division</span>
+                <select id="fDivision" onchange="onDivisionChange()" disabled>
+                    <option value="">All Divisions</option>
+                </select>
+            </div>
+            <div>
+                <span class="label">Class</span>
+                <select id="fClass" onchange="renderTable()" disabled>
+                    <option value="">All Classes</option>
+                </select>
+            </div>
+            <div>
+                <span class="label">Faculty</span>
+                <select id="fFaculty" onchange="renderTable()" disabled>
+                    <option value="">All Faculty</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="free-search">
+            <input type="text" id="searchBox"
+                   placeholder="Or type anything: name, subject, email, code..."
+                   oninput="renderTable()" />
+            <button onclick="clearAll()">Reset</button>
+        </div>
+
+        <div class="chips" id="chips"></div>
+
+        <p class="result-info">
+            <span id="resultInfo">Showing all records.</span>
+            <span class="scroll-hint">↕ Scroll inside the list to see more</span>
+        </p>
+
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Category</th>
+                        <th>Name / Class</th>
+                        <th>Details</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody id="dataBody"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <script src="data.js"></script>
+    <script>
+        function safeLoad(key) {
+            try {
+                if (typeof loadList === 'function') return loadList(key) || [];
+            } catch (e) {}
+            try { return JSON.parse(localStorage.getItem(key) || '[]'); }
+            catch (e) { return []; }
+        }
+        function safeSave(key, arr) {
+            try {
+                if (typeof saveList === 'function') { saveList(key, arr); return; }
+            } catch (e) {}
+            localStorage.setItem(key, JSON.stringify(arr));
+        }
+        function safeEscape(str) {
+            return String(str ?? '')
+                .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+        }
+        function eq(a, b) {
+            return String(a ?? '').trim().toLowerCase() ===
+                   String(b ?? '').trim().toLowerCase();
+        }
+
+        function data() {
+            return {
+                students:  safeLoad('students'),
+                teachers:  safeLoad('teachers'),
+                courses:   safeLoad('courses'),
+                classes:   safeLoad('classes'),
+                divisions: safeLoad('divisions')
+            };
+        }
+
+        // ===== FIXED: Total Students counts from divisions too =====
+        function updateCounts() {
+            const d = data();
+
+            // Real student records
+            const realStudents = d.students.length;
+
+            // Students stored inside divisions
+            const divisionStudents = d.divisions.reduce(
+                (sum, x) => sum + (Number(x.students) || 0), 0
+            );
+
+            // Combined total
+            const totalStudents = realStudents + divisionStudents;
+
+            document.getElementById('studentCount').textContent  = totalStudents;
+            document.getElementById('teacherCount').textContent  = d.teachers.length;
+            document.getElementById('courseCount').textContent   = d.courses.length;
+            document.getElementById('classCount').textContent    = d.classes.length;
+            document.getElementById('divisionCount').textContent = d.divisions.length;
+
+            if (typeof adminData !== 'undefined' && typeof saveData === 'function') {
+                adminData.students  = totalStudents;
+                adminData.teachers  = d.teachers.length;
+                adminData.courses   = d.courses.length;
+                adminData.classes   = d.classes.length;
+                adminData.divisions = d.divisions.length;
+                saveData();
+            }
+        }
+
+        function fillCourseDropdown() {
+            const sel = document.getElementById('fCourse');
+            const prev = sel.value;
+            sel.innerHTML = `<option value="">All Courses</option>`;
+            data().courses.forEach(c => {
+                const opt = document.createElement('option');
+                opt.value = c.name;
+                opt.textContent = `${c.name}${c.code ? ' (' + c.code + ')' : ''}`;
+                sel.appendChild(opt);
+            });
+            if (prev) sel.value = prev;
+        }
+
+        function onCourseChange() {
+            const course = document.getElementById('fCourse').value;
+            const d = data();
+
+            const dSel = document.getElementById('fDivision');
+            dSel.innerHTML = `<option value="">All Divisions</option>`;
+            if (course) {
+                const filtered = d.divisions.filter(x => eq(x.course, course));
+                filtered.forEach(x => {
+                    const opt = document.createElement('option');
+                    opt.value = x.name;
+                    opt.textContent = `Division ${x.name}`;
+                    dSel.appendChild(opt);
+                });
+                dSel.disabled = filtered.length === 0;
+            } else {
+                dSel.disabled = true;
+            }
+
+            const fSel = document.getElementById('fFaculty');
+            fSel.innerHTML = `<option value="">All Faculty</option>`;
+            if (course) {
+                const seen = new Set();
+                d.teachers
+                    .filter(t => eq(t.course, course))
+                    .forEach(t => {
+                        const k = t.name.toLowerCase();
+                        if (seen.has(k)) return;
+                        seen.add(k);
+                        const opt = document.createElement('option');
+                        opt.value = t.name;
+                        opt.textContent = t.name;
+                        fSel.appendChild(opt);
+                    });
+                fSel.disabled = seen.size === 0;
+            } else {
+                fSel.disabled = true;
+            }
+
+            resetClassDropdown();
+            renderTable();
+        }
+
+        function onDivisionChange() {
+            resetClassDropdown(true);
+            renderTable();
+        }
+
+        function resetClassDropdown(populate) {
+            const course = document.getElementById('fCourse').value;
+            const division = document.getElementById('fDivision').value;
+            const cSel = document.getElementById('fClass');
+            cSel.innerHTML = `<option value="">All Classes</option>`;
+
+            if (populate && course) {
+                const d = data();
+                const filtered = d.classes.filter(c =>
+                    eq(c.course, course) &&
+                    (!division || eq(c.division, division))
+                );
+                filtered.forEach(c => {
+                    const opt = document.createElement('option');
+                    opt.value = c.class;
+                    opt.textContent = `Class ${c.class}`;
+                    cSel.appendChild(opt);
+                });
+                cSel.disabled = filtered.length === 0;
+            } else {
+                cSel.disabled = true;
+            }
+        }
+
+        function getAllRows() {
+            const rows = [];
+            const d = data();
+
+            d.students.forEach((s, i) => {
+                rows.push({
+                    category: 'student', badge: 'Student',
+                    name: s.name || '—',
+                    details: [
+                        s.course   ? `Course: ${s.course}` : '',
+                        s.division ? `Division: ${s.division}` : '',
+                        s.email    ? `✉️ ${s.email}` : '',
+                        s.roll     ? `Roll: ${s.roll}` : ''
+                    ].filter(Boolean).join(' · ') || '—',
+                    raw: JSON.stringify(s).toLowerCase(),
+                    index: i, key: 'students',
+                    course: s.course, division: s.division,
+                    classNo: s.class, faculty: ''
+                });
+            });
+
+            d.teachers.forEach((t, i) => {
+                rows.push({
+                    category: 'teacher', badge: 'Faculty',
+                    name: t.name || '—',
+                    details: [
+                        t.course   ? `Dept: ${t.course}` : '',
+                        t.division ? `Division: ${t.division}` : '',
+                        t.subject  ? `Subject: ${t.subject}` : '',
+                        t.email    ? `✉️ ${t.email}` : ''
+                    ].filter(Boolean).join(' · ') || '—',
+                    raw: JSON.stringify(t).toLowerCase(),
+                    index: i, key: 'teachers',
+                    course: t.course, division: t.division,
+                    classNo: '', faculty: t.name
+                });
+            });
+
+            d.courses.forEach((c, i) => {
+                rows.push({
+                    category: 'course', badge: 'Course',
+                    name: c.name || '—',
+                    details: [
+                        c.code ? `Code: ${c.code}` : '',
+                        c.duration ? `Duration: ${c.duration}` : '',
+                        c.seats ? `Seats: ${c.seats}` : ''
+                    ].filter(Boolean).join(' · ') || '—',
+                    raw: JSON.stringify(c).toLowerCase(),
+                    index: i, key: 'courses',
+                    course: c.name, division: '', classNo: '', faculty: ''
+                });
+            });
+
+            d.classes.forEach((c, i) => {
+                rows.push({
+                    category: 'class', badge: 'Class',
+                    name: `Class ${c.class || '—'}`,
+                    details: [
+                        c.course   ? `Course: ${c.course}` : '',
+                        c.division ? `Division: ${c.division}` : ''
+                    ].filter(Boolean).join(' · ') || '—',
+                    raw: JSON.stringify(c).toLowerCase(),
+                    index: i, key: 'classes',
+                    course: c.course, division: c.division,
+                    classNo: c.class, faculty: ''
+                });
+            });
+
+            d.divisions.forEach((x, i) => {
+                rows.push({
+                    category: 'division', badge: 'Division',
+                    name: `Division ${x.name || '—'}`,
+                    details: [
+                        x.course   ? `Course: ${x.course}` : '',
+                        x.students != null ? `Students: ${x.students}` : '',
+                        x.faculty  ? `Faculty: ${x.faculty}` : ''
+                    ].filter(Boolean).join(' · ') || '—',
+                    raw: JSON.stringify(x).toLowerCase(),
+                    index: i, key: 'divisions',
+                    course: x.course, division: x.name,
+                    classNo: '', faculty: x.faculty
+                });
+            });
+
+            return rows;
+        }
+
+        function renderTable() {
+            const course   = document.getElementById('fCourse').value;
+            const division = document.getElementById('fDivision').value;
+            const classNo  = document.getElementById('fClass').value;
+            const faculty  = document.getElementById('fFaculty').value;
+            const query    = document.getElementById('searchBox').value.trim().toLowerCase();
+
+            let rows = getAllRows();
+
+            if (course)   rows = rows.filter(r => eq(r.course, course));
+            if (division) rows = rows.filter(r => eq(r.division, division));
+            if (classNo)  rows = rows.filter(r => eq(r.classNo, classNo));
+            if (faculty)  rows = rows.filter(r => eq(r.faculty, faculty));
+
+            if (query) {
+                rows = rows.filter(r =>
+                    r.name.toLowerCase().includes(query) ||
+                    r.details.toLowerCase().includes(query) ||
+                    r.raw.includes(query)
+                );
+            }
+
+            renderChips({ course, division, classNo, faculty });
+
+            const info = document.getElementById('resultInfo');
+            info.textContent = rows.length === 0
+                ? 'No matching records found.'
+                : `Showing ${rows.length} record(s).`;
+
+            const body = document.getElementById('dataBody');
+            if (rows.length === 0) {
+                body.innerHTML = `<tr class="empty-row"><td colspan="4">No results.</td></tr>`;
+                return;
+            }
+
+            body.innerHTML = rows.map(r => `
+                <tr>
+                    <td><span class="badge ${r.category}">${r.badge}</span></td>
+                    <td>${safeEscape(r.name)}</td>
+                    <td>${safeEscape(r.details)}</td>
+                    <td>
+                        <button class="del-row"
+                            onclick="deleteRow('${r.key}', ${r.index})">🗑</button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function renderChips({ course, division, classNo, faculty }) {
+            const box = document.getElementById('chips');
+            const items = [];
+            if (course)   items.push({ label: `Course: ${course}`,   key: 'course' });
+            if (division) items.push({ label: `Division: ${division}`, key: 'division' });
+            if (classNo)  items.push({ label: `Class: ${classNo}`,   key: 'class' });
+            if (faculty)  items.push({ label: `Faculty: ${faculty}`, key: 'faculty' });
+
+            box.innerHTML = items.map(i => `
+                <span class="chip">
+                    ${safeEscape(i.label)}
+                    <span class="x" onclick="removeFilter('${i.key}')">✕</span>
+                </span>
+            `).join('');
+        }
+
+        function removeFilter(key) {
+            if (key === 'course') {
+                document.getElementById('fCourse').value = '';
+                onCourseChange();
+            } else if (key === 'division') {
+                document.getElementById('fDivision').value = '';
+                onDivisionChange();
+            } else if (key === 'class') {
+                document.getElementById('fClass').value = '';
+                renderTable();
+            } else if (key === 'faculty') {
+                document.getElementById('fFaculty').value = '';
+                renderTable();
+            }
+        }
+
+        function deleteRow(key, index) {
+            if (!confirm('Delete this record?')) return;
+            const arr = safeLoad(key);
+            arr.splice(index, 1);
+            safeSave(key, arr);
+            updateCounts();
+            fillCourseDropdown();
+            onCourseChange();
+        }
+
+        function clearAll() {
+            document.getElementById('searchBox').value = '';
+            document.getElementById('fCourse').value = '';
+            onCourseChange();
+        }
+
+        fillCourseDropdown();
+        updateCounts();
+        renderTable();
+    </script>
+
+</body>
+</html>

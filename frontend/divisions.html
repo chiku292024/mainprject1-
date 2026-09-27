@@ -1,0 +1,353 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Manage Divisions</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: Arial, sans-serif; }
+        body {
+            min-height: 100vh; background: #eef4ff; padding: 30px 40px 40px;
+            text-align: center; display: flex; flex-direction: column;
+            align-items: center; position: relative; overflow-x: hidden;
+        }
+        body::before {
+            content: ""; position: fixed; width: 500px; height: 500px;
+            background: #c7dcff; border-radius: 50%; top: -200px; right: -150px;
+            z-index: -1; animation: move 8s ease-in-out infinite alternate;
+        }
+        body::after {
+            content: ""; position: fixed; width: 400px; height: 400px;
+            background: #d8f3ff; border-radius: 50%; bottom: -180px; left: -120px;
+            z-index: -1; animation: move 10s ease-in-out infinite alternate-reverse;
+        }
+        @keyframes move { from { transform: translate(0,0); } to { transform: translate(-30px,30px); } }
+
+        .top-bar {
+            width: 100%; max-width: 1100px; display: flex;
+            justify-content: flex-end; gap: 14px; margin-bottom: 40px; flex-wrap: wrap;
+        }
+        .top-bar a {
+            padding: 10px 22px; background: #2864c7; color: white;
+            text-decoration: none; border-radius: 8px; font-size: 15px;
+            font-weight: 500; transition: 0.3s;
+            box-shadow: 0 4px 10px rgba(40, 100, 199, 0.25);
+        }
+        .top-bar a:hover { background: #173f85; transform: translateY(-2px); }
+
+        h1 { color: #173b70; font-size: 32px; margin-bottom: 12px; }
+        .subtitle { color: #527a9b; font-size: 16px; margin-bottom: 30px; }
+
+        .count-badge {
+            display: inline-block; background: white; padding: 14px 28px;
+            border-radius: 14px; box-shadow: 0 8px 25px rgba(0,0,0,0.08);
+            color: #173b70; font-size: 18px; font-weight: 600;
+            margin-bottom: 30px; border: 1px solid #dce8f5;
+        }
+        .count-badge span { color: #2864c7; font-weight: 700; font-size: 22px; margin-left: 6px; }
+
+        /* ---- Form (grid) ---- */
+        .form-card {
+            background: white; max-width: 1000px; width: 100%;
+            padding: 28px 26px; border-radius: 16px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.08);
+            margin-bottom: 30px;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 16px 14px;
+            align-items: end;
+        }
+        .form-card input, .form-card select {
+            padding: 12px 16px; border: 1px solid #cfe0f2; border-radius: 8px;
+            font-size: 15px; outline: none; transition: 0.3s;
+            width: 100%; color: #173b70; background: white;
+        }
+        .form-card input:focus, .form-card select:focus {
+            border-color: #2864c7; box-shadow: 0 0 0 3px rgba(40,100,199,0.15);
+        }
+        .form-card button {
+            grid-column: 1 / -1;
+            justify-self: center;
+            padding: 12px 34px; background: #2864c7; color: white; border: none;
+            border-radius: 8px; font-size: 15px; font-weight: 500;
+            cursor: pointer; transition: 0.3s;
+            box-shadow: 0 4px 10px rgba(40, 100, 199, 0.25);
+            margin-top: 6px;
+        }
+        .form-card button:hover { background: #173f85; transform: translateY(-2px); }
+
+        #dupWarn {
+            color: #e74c3c; font-size: 14px; font-weight: 500;
+            margin: -15px auto 20px; max-width: 900px;
+        }
+
+        .course-group {
+            max-width: 1000px; width: 100%;
+            background: white; padding: 22px; border-radius: 16px;
+            box-shadow: 0 8px 22px rgba(0,0,0,0.07);
+            margin-bottom: 22px; text-align: left;
+        }
+        .course-group h2 {
+            color: #2864c7; font-size: 20px; margin-bottom: 4px;
+        }
+        .course-group .course-meta {
+            color: #7a94a8; font-size: 13px; margin-bottom: 16px;
+        }
+
+        /* ---- Divisions laid out horizontally ---- */
+        .div-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 16px;
+            width: 100%;
+        }
+        .item-card {
+            background: #f9fcff; padding: 18px; border-radius: 12px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+            transition: 0.3s; border-left: 5px solid #2864c7;
+            display: flex; flex-direction: column; gap: 6px;
+            min-width: 0;
+            overflow-wrap: break-word;
+        }
+        .item-card:hover { transform: translateY(-4px); box-shadow: 0 10px 22px rgba(0,0,0,0.1); }
+        .item-card h3 { color: #173b70; font-size: 16px; margin-bottom: 2px; }
+        .item-card p { color: #527a9b; font-size: 13px; margin: 0; }
+        .item-card .delete-btn {
+            margin-top: 8px; padding: 6px 12px; background: #e74c3c;
+            color: white; border: none; border-radius: 6px; font-size: 12px;
+            font-weight: 500; cursor: pointer; transition: 0.3s; align-self: flex-start;
+        }
+        .item-card .delete-btn:hover { background: #c0392b; }
+
+        .empty {
+            color: #7a94a8; font-size: 16px; padding: 30px; background: white;
+            border-radius: 14px; box-shadow: 0 8px 22px rgba(0,0,0,0.06);
+            width: 100%; max-width: 700px;
+        }
+
+        .mk {
+            display: inline-block; padding: 13px 30px; background: #2864c7;
+            color: white; text-decoration: none; border-radius: 8px;
+            font-size: 16px; font-weight: 500; transition: 0.3s;
+            min-width: 240px; box-shadow: 0 4px 10px rgba(40,100,199,0.25);
+            margin-top: 10px;
+        }
+        .mk:hover { background: #173f85; transform: translateY(-3px); }
+
+        @media (max-width: 900px) {
+            .div-grid { grid-template-columns: repeat(2, 1fr); }
+            .form-card { grid-template-columns: repeat(2, 1fr); }
+        }
+        @media (max-width: 550px) {
+            body { padding: 20px; }
+            h1 { font-size: 24px; }
+            .top-bar { flex-direction: column; align-items: stretch; }
+            .top-bar a { text-align: center; }
+            .form-card { grid-template-columns: 1fr; }
+            .form-card input, .form-card select, .form-card button { width: 100%; }
+            .div-grid { grid-template-columns: 1fr; }
+            .mk { width: 100%; min-width: unset; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="top-bar">
+        <a href="admin.html">Back to Admin</a>
+        <a href="index.html">Logout</a>
+    </div>
+
+    <h1>Manage Divisions</h1>
+    <p class="subtitle">Each division belongs to a specific course</p>
+    <p class="subtitle" style="color:#b03a2e; font-weight:600; margin-top:-20px;">
+        📌 Rule: Division names must be unique inside the same course. Same name can exist in a different course.
+    </p>
+
+    <div class="count-badge">
+        Total Divisions: <span id="divisionCount">0</span>
+        &nbsp;|&nbsp;
+        Total Students: <span id="totalStudents">0</span>
+    </div>
+
+    <div class="form-card">
+        <select id="divCourse" onchange="onCourseChange()">
+            <option value="">Select Course</option>
+        </select>
+        <input type="text" id="divName" placeholder="Division Name (e.g. A)" oninput="checkDuplicate()" />
+        <input type="number" id="divStudents" placeholder="No. of Students" min="0" />
+        <select id="divFaculty">
+            <option value="">Select Faculty (optional)</option>
+        </select>
+        <button onclick="addDivision()">➕ Add Division</button>
+    </div>
+
+    <p id="dupWarn"></p>
+
+    <div id="groupedList"></div>
+
+    <a href="admin.html" class="mk">← Back to Admin Panel</a>
+
+    <script src="data.js"></script>
+    <script>
+        const KEY = 'divisions';
+        let divisions = loadList(KEY);
+
+        let courses   = loadList('courses');
+        let teachers  = loadList('teachers');
+
+        // ---- Course dropdown ----
+        function fillCourseDropdown() {
+            const sel = document.getElementById('divCourse');
+            const prev = sel.value;
+            sel.innerHTML = `<option value="">Select Course</option>`;
+            courses.forEach(c => {
+                const opt = document.createElement('option');
+                opt.value = c.name;
+                opt.textContent = `${c.name} (${c.code})`;
+                sel.appendChild(opt);
+            });
+            if (prev) sel.value = prev;
+        }
+
+        // ---- Faculty dropdown (filtered by selected course) ----
+        function fillFacultyDropdown(courseName) {
+            const sel = document.getElementById('divFaculty');
+            sel.innerHTML = `<option value="">Select Faculty (optional)</option>`;
+
+            const list = courseName
+                ? teachers.filter(t => t.course === courseName)
+                : teachers;
+
+            const seen = new Set();
+            list.forEach(t => {
+                const k = t.name.toLowerCase();
+                if (seen.has(k)) return;
+                seen.add(k);
+                const opt = document.createElement('option');
+                opt.value = t.name;
+                opt.textContent = t.name;
+                sel.appendChild(opt);
+            });
+        }
+
+        function onCourseChange() {
+            const course = document.getElementById('divCourse').value;
+            fillFacultyDropdown(course);
+            checkDuplicate();
+        }
+
+        function checkDuplicate() {
+            const warn = document.getElementById('dupWarn');
+            warn.textContent = '';
+
+            const course = document.getElementById('divCourse').value;
+            const name   = document.getElementById('divName').value.trim();
+            if (!course || !name) return;
+
+            const exists = divisions.some(d =>
+                d.course.toLowerCase() === course.toLowerCase() &&
+                d.name.toLowerCase()   === name.toLowerCase()
+            );
+
+            if (exists) {
+                warn.textContent = `⚠️ Division "${name}" already exists in ${course}.`;
+            }
+        }
+
+        // ---- Render (grouped by course) ----
+        function render() {
+            const container = document.getElementById('groupedList');
+            document.getElementById('divisionCount').textContent = divisions.length;
+
+            const totalStudents = divisions.reduce((sum, d) => sum + (Number(d.students) || 0), 0);
+            document.getElementById('totalStudents').textContent = totalStudents;
+
+            if (typeof adminData !== 'undefined' && typeof saveData === 'function') {
+                adminData.students  = totalStudents;
+                adminData.divisions = divisions.length;
+                saveData();
+            }
+
+            if (divisions.length === 0) {
+                container.innerHTML = `<div class="empty">No divisions yet. Add one above.</div>`;
+                return;
+            }
+
+            const grouped = {};
+            divisions.forEach((d, idx) => {
+                if (!grouped[d.course]) grouped[d.course] = [];
+                grouped[d.course].push({ ...d, originalIndex: idx });
+            });
+
+            container.innerHTML = Object.keys(grouped).map(courseName => {
+                const list = grouped[courseName];
+                const courseObj = courses.find(c => c.name === courseName);
+                const code = courseObj ? courseObj.code : '—';
+
+                const divCards = list.map(d => `
+                    <div class="item-card">
+                        <h3>Division ${escapeHtml(d.name)}</h3>
+                        <p>👥 Students: ${escapeHtml(String(d.students))}</p>
+                        <p>👨‍🏫 Faculty: ${escapeHtml(d.faculty || 'Not assigned')}</p>
+                        <button class="delete-btn" onclick="del(${d.originalIndex})">🗑 Delete</button>
+                    </div>
+                `).join('');
+
+                return `
+                    <div class="course-group">
+                        <h2>${escapeHtml(courseName)}</h2>
+                        <p class="course-meta">📘 Code: ${escapeHtml(code)} · ${list.length} division(s)</p>
+                        <div class="div-grid">${divCards}</div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function addDivision() {
+            const course   = document.getElementById('divCourse').value;
+            const name     = document.getElementById('divName').value.trim();
+            const students = document.getElementById('divStudents').value.trim();
+            const faculty  = document.getElementById('divFaculty').value;
+
+            if (!course) { alert('Please select a course.'); return; }
+            if (!name)   { alert('Division name is required.'); return; }
+            if (students === '' || isNaN(Number(students)) || Number(students) < 0) {
+                alert('Please enter a valid number of students.'); return;
+            }
+
+            const dup = divisions.some(d =>
+                d.course.toLowerCase() === course.toLowerCase() &&
+                d.name.toLowerCase()   === name.toLowerCase()
+            );
+            if (dup) {
+                alert(`❌ Division "${name}" already exists in ${course}.`);
+                return;
+            }
+
+            divisions.push({
+                course,
+                name,
+                students: Number(students),
+                faculty: faculty || 'Not assigned'
+            });
+            saveList(KEY, divisions);
+
+            document.getElementById('divName').value = '';
+            document.getElementById('divStudents').value = '';
+            document.getElementById('divFaculty').value = '';
+            document.getElementById('dupWarn').textContent = '';
+            render();
+        }
+
+        function del(i) {
+            if (!confirm('Delete this division?')) return;
+            divisions.splice(i, 1);
+            saveList(KEY, divisions);
+            render();
+        }
+
+        fillCourseDropdown();
+        fillFacultyDropdown('');
+        render();
+    </script>
+
+</body>
+</html>

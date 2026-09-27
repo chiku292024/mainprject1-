@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>View Timetables</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: Arial, sans-serif; }
+        body {
+            min-height: 100vh; background: #eef4ff; padding: 30px 40px 40px;
+            text-align: center; display: flex; flex-direction: column;
+            align-items: center; position: relative; overflow-x: hidden;
+        }
+        body::before {
+            content: ""; position: fixed; width: 500px; height: 500px;
+            background: #c7dcff; border-radius: 50%; top: -200px; right: -150px;
+            z-index: -1; animation: move 8s ease-in-out infinite alternate;
+        }
+        body::after {
+            content: ""; position: fixed; width: 400px; height: 400px;
+            background: #d8f3ff; border-radius: 50%; bottom: -180px; left: -120px;
+            z-index: -1; animation: move 10s ease-in-out infinite alternate-reverse;
+        }
+        @keyframes move { from { transform: translate(0,0); } to { transform: translate(-30px,30px); } }
+
+        .top-bar {
+            width: 100%; max-width: 1200px; display: flex;
+            justify-content: flex-end; gap: 14px; margin-bottom: 30px; flex-wrap: wrap;
+        }
+        .top-bar a {
+            padding: 10px 22px; background: #2864c7; color: white;
+            text-decoration: none; border-radius: 8px; font-size: 15px;
+            font-weight: 500; transition: 0.3s;
+            box-shadow: 0 4px 10px rgba(40, 100, 199, 0.25);
+        }
+        .top-bar a:hover { background: #173f85; transform: translateY(-2px); }
+
+        h1 { color: #173b70; font-size: 32px; margin-bottom: 10px; }
+        .subtitle { color: #527a9b; font-size: 16px; margin-bottom: 30px; }
+
+        .filter-card {
+            background: white; max-width: 900px; width: 100%;
+            padding: 20px 22px; border-radius: 16px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.08);
+            margin-bottom: 26px;
+            display: grid; grid-template-columns: 1fr 1fr; gap: 14px;
+        }
+        .filter-card select {
+            padding: 11px 14px; border: 1px solid #cfe0f2; border-radius: 8px;
+            font-size: 14px; outline: none; color: #173b70; background: white;
+            transition: 0.3s; width: 100%;
+        }
+        .filter-card select:focus { border-color: #2864c7; box-shadow: 0 0 0 3px rgba(40,100,199,0.15); }
+
+        .tt-list { max-width: 1200px; width: 100%; }
+
+        .tt-card {
+            background: white; padding: 22px; border-radius: 16px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.08);
+            margin-bottom: 26px; text-align: left;
+        }
+        .tt-card-head {
+            display: flex; justify-content: space-between; align-items: center;
+            gap: 10px; flex-wrap: wrap; margin-bottom: 14px;
+        }
+        .tt-card-head h2 { color: #173b70; font-size: 20px; }
+        .tt-card-head .meta { color: #7a94a8; font-size: 13px; }
+        .tt-card-head .delete-btn {
+            padding: 7px 14px; background: #e74c3c; color: white;
+            border: none; border-radius: 6px; font-size: 12.5px; font-weight: 600;
+            cursor: pointer; transition: 0.3s;
+        }
+        .tt-card-head .delete-btn:hover { background: #c0392b; }
+
+        table.tt {
+            width: 100%; border-collapse: collapse;
+            min-width: 700px;
+        }
+        table.tt thead th {
+            background: #2864c7; color: white;
+            padding: 10px 12px; font-size: 13.5px; font-weight: 600;
+            border: 1px solid #2864c7;
+        }
+        table.tt tbody th {
+            background: #eef4ff; color: #173b70; font-weight: 700;
+            padding: 10px 12px; font-size: 13px;
+            border: 1px solid #e2ecf7; width: 90px;
+        }
+        table.tt td {
+            border: 1px solid #e2ecf7;
+            padding: 10px 12px; font-size: 13px;
+            text-align: center; vertical-align: middle;
+            background: #f9fcff; color: #173b70;
+            min-width: 130px;
+        }
+        table.tt td.filled {
+            background: linear-gradient(135deg, #eaf1fa, #dcecff);
+            border-left: 3px solid #2864c7;
+        }
+        table.tt td .subject { font-weight: 700; color: #2864c7; display: block; margin-bottom: 3px; }
+        table.tt td .faculty { font-size: 12px; color: #527a9b; }
+        table.tt td.empty { color: #b8c8d8; font-style: italic; }
+
+        .table-scroll { overflow-x: auto; }
+
+        .empty {
+            color: #7a94a8; font-size: 16px; padding: 30px; background: white;
+            border-radius: 14px; box-shadow: 0 8px 22px rgba(0,0,0,0.06);
+            width: 100%; max-width: 700px; margin-bottom: 30px;
+        }
+
+        @media (max-width: 550px) {
+            body { padding: 20px; }
+            h1 { font-size: 24px; }
+            .filter-card { grid-template-columns: 1fr; }
+            .top-bar { flex-direction: column; align-items: stretch; }
+            .top-bar a { text-align: center; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="top-bar">
+        <a href="admin.html">Back to Admin</a>
+        <a href="timetable_generator.html">Generate Timetable</a>
+        <a href="index.html">Logout</a>
+    </div>
+
+    <h1>Saved Timetables</h1>
+    <p class="subtitle">All timetables you have generated and saved.</p>
+
+    <div class="filter-card">
+        <select id="fCourse" onchange="renderList()">
+            <option value="">All Courses</option>
+        </select>
+        <select id="fDivision" onchange="renderList()">
+            <option value="">All Divisions</option>
+        </select>
+    </div>
+
+    <div class="tt-list" id="ttList"></div>
+
+    <script src="data.js"></script>
+    <script>
+        const DAY_NAMES = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+        let timetables = loadList('timetables');
+        let courses    = loadList('courses');
+        let divisions  = loadList('divisions');
+
+        function fillFilters() {
+            const cSel = document.getElementById('fCourse');
+            cSel.innerHTML = `<option value="">All Courses</option>`;
+            courses.forEach(c => {
+                const opt = document.createElement('option');
+                opt.value = c.name;
+                opt.textContent = `${c.name}${c.code ? ' (' + c.code + ')' : ''}`;
+                cSel.appendChild(opt);
+            });
+
+            const dSel = document.getElementById('fDivision');
+            dSel.innerHTML = `<option value="">All Divisions</option>`;
+            divisions.forEach(d => {
+                const opt = document.createElement('option');
+                opt.value = d.name;
+                opt.textContent = `Division ${d.name} (${d.course})`;
+                dSel.appendChild(opt);
+            });
+        }
+
+        function renderList() {
+            const course = document.getElementById('fCourse').value.toLowerCase();
+            const division = document.getElementById('fDivision').value.toLowerCase();
+            const container = document.getElementById('ttList');
+
+            let list = [...timetables];
+
+            if (course)   list = list.filter(t => t.course.toLowerCase() === course);
+            if (division) list = list.filter(t => t.division.toLowerCase() === division);
+
+            if (list.length === 0) {
+                container.innerHTML = `<div class="empty">No saved timetables match your filters.</div>`;
+                return;
+            }
+
+            list.sort((a, b) => new Date(b.savedAt || 0) - new Date(a.savedAt || 0));
+
+            container.innerHTML = list.map((t) => {
+                const originalIndex = timetables.indexOf(t);
+                const savedDate = t.savedAt
+                    ? new Date(t.savedAt).toLocaleString()
+                    : '—';
+
+                let html = '<div class="table-scroll"><table class="tt"><thead><tr><th>Day</th>';
+                for (let p = 0; p < t.periods; p++) {
+                    html += `<th>Period ${p + 1}</th>`;
+                }
+                html += '</tr></thead><tbody>';
+
+                for (let d = 0; d < t.days; d++) {
+                    html += `<tr><th>${DAY_NAMES[d]}</th>`;
+                    for (let p = 0; p < t.periods; p++) {
+                        const cell = t.grid[d][p];
+                        if (cell) {
+                            html += `
+                                <td class="filled" title="${escapeHtml(cell.faculty)}">
+                                    <span class="subject">${escapeHtml(cell.subject)}</span>
+                                    <span class="faculty">${escapeHtml(cell.faculty)}</span>
+                                </td>`;
+                        } else {
+                            html += `<td class="empty">—</td>`;
+                        }
+                    }
+                    html += '</tr>';
+                }
+                html += '</tbody></table></div>';
+
+                return `
+                    <div class="tt-card">
+                        <div class="tt-card-head">
+                            <div>
+                                <h2>${escapeHtml(t.course)} — Division ${escapeHtml(t.division)}</h2>
+                                <p class="meta">${t.days} days × ${t.periods} periods · Saved: ${escapeHtml(savedDate)}</p>
+                            </div>
+                            <button class="delete-btn" onclick="del(${originalIndex})">🗑 Delete</button>
+                        </div>
+                        ${html}
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function del(i) {
+            if (!confirm('Delete this saved timetable?')) return;
+            timetables.splice(i, 1);
+            saveList('timetables', timetables);
+            renderList();
+        }
+
+        fillFilters();
+        renderList();
+    </script>
+
+</body>
+</html>

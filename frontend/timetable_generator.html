@@ -1,0 +1,931 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Generate Timetable</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: Arial, sans-serif; }
+        body {
+            min-height: 100vh; background: #eef4ff; padding: 30px 40px 40px;
+            text-align: center; display: flex; flex-direction: column;
+            align-items: center; position: relative; overflow-x: hidden;
+        }
+        body::before {
+            content: ""; position: fixed; width: 500px; height: 500px;
+            background: #c7dcff; border-radius: 50%; top: -200px; right: -150px;
+            z-index: -1; animation: move 8s ease-in-out infinite alternate;
+        }
+        body::after {
+            content: ""; position: fixed; width: 400px; height: 400px;
+            background: #d8f3ff; border-radius: 50%; bottom: -180px; left: -120px;
+            z-index: -1; animation: move 10s ease-in-out infinite alternate-reverse;
+        }
+        @keyframes move { from { transform: translate(0,0); } to { transform: translate(-30px,30px); } }
+
+        .top-bar {
+            width: 100%; max-width: 1200px; display: flex;
+            justify-content: flex-end; gap: 14px; margin-bottom: 30px; flex-wrap: wrap;
+        }
+        .top-bar a {
+            padding: 10px 22px; background: #2864c7; color: white;
+            text-decoration: none; border-radius: 8px; font-size: 15px;
+            font-weight: 500; transition: 0.3s;
+            box-shadow: 0 4px 10px rgba(40, 100, 199, 0.25);
+        }
+        .top-bar a:hover { background: #173f85; transform: translateY(-2px); }
+
+        h1 { color: #173b70; font-size: 32px; margin-bottom: 10px; }
+        .subtitle { color: #527a9b; font-size: 16px; margin-bottom: 30px; }
+
+        .form-card {
+            background: white; max-width: 1100px; width: 100%;
+            padding: 26px 24px; border-radius: 16px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.08);
+            margin-bottom: 20px;
+            display: grid; grid-template-columns: repeat(4, 1fr);
+            gap: 14px; align-items: end;
+        }
+        .form-card .label {
+            color: #527a9b; font-size: 12.5px; font-weight: 600;
+            text-transform: uppercase; letter-spacing: 0.5px;
+            margin-bottom: 5px; display: block; text-align: left;
+        }
+        .form-card select, .form-card input {
+            padding: 12px 14px; border: 1px solid #cfe0f2; border-radius: 8px;
+            font-size: 14px; outline: none; color: #173b70; background: white;
+            transition: 0.3s; width: 100%;
+        }
+        .form-card select:focus, .form-card input:focus {
+            border-color: #2864c7; box-shadow: 0 0 0 3px rgba(40,100,199,0.15);
+        }
+        .form-card select:disabled { background: #f3f7fb; color: #9bb0c2; cursor: not-allowed; }
+
+        .btn-row {
+            grid-column: 1 / -1; display: flex; gap: 12px; justify-content: center;
+            margin-top: 6px; flex-wrap: wrap;
+        }
+        .btn {
+            padding: 12px 26px; border: none; border-radius: 8px;
+            font-size: 15px; font-weight: 600; cursor: pointer;
+            transition: 0.3s; color: white;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.10);
+        }
+        .btn-primary   { background: linear-gradient(135deg, #2864c7, #4a8bff); }
+        .btn-primary:hover { background: linear-gradient(135deg, #173f85, #2864c7); transform: translateY(-2px); }
+        .btn-success   { background: linear-gradient(135deg, #1e8e3e, #2ecc71); }
+        .btn-success:hover { background: linear-gradient(135deg, #16632a, #1e8e3e); transform: translateY(-2px); }
+        .btn-secondary { background: linear-gradient(135deg, #7a94a8, #9bb0c2); }
+        .btn-secondary:hover { background: linear-gradient(135deg, #527a9b, #7a94a8); transform: translateY(-2px); }
+        .btn-warn      { background: linear-gradient(135deg, #b06f00, #e6a100); }
+        .btn-warn:hover { background: linear-gradient(135deg, #8a5700, #b06f00); transform: translateY(-2px); }
+        .btn:disabled { opacity: 0.55; cursor: not-allowed; transform: none; }
+
+        #status {
+            color: #527a9b; font-size: 14px; margin-bottom: 20px;
+            min-height: 22px; font-weight: 500; max-width: 900px;
+        }
+        #status.error   { color: #e74c3c; }
+        #status.success { color: #1e8e3e; }
+        #status.warn    { color: #b06f00; }
+
+        #debugBox {
+            display: none;
+            max-width: 1000px; width: 100%;
+            background: #1e293b; color: #d1e7ff;
+            font-family: 'Courier New', monospace; font-size: 12.5px;
+            padding: 14px 18px; border-radius: 12px;
+            text-align: left; margin-bottom: 20px;
+            max-height: 260px; overflow-y: auto;
+            white-space: pre-wrap; line-height: 1.5;
+        }
+        #debugBox.visible { display: block; }
+
+        .stats {
+            max-width: 1000px; width: 100%;
+            background: white; padding: 18px 22px; border-radius: 14px;
+            box-shadow: 0 6px 18px rgba(0,0,0,0.06);
+            margin-bottom: 22px;
+            display: none; grid-template-columns: repeat(4, 1fr);
+            gap: 14px; text-align: left;
+        }
+        .stats.visible { display: grid; }
+        .stat-box {
+            background: #f9fcff; padding: 12px 14px; border-radius: 10px;
+            border-left: 4px solid #2864c7;
+        }
+        .stat-box .k { color: #7a94a8; font-size: 12px; font-weight: 600;
+            text-transform: uppercase; letter-spacing: 0.4px; }
+        .stat-box .v { color: #173b70; font-size: 20px; font-weight: 700; margin-top: 4px; }
+
+        .timetable-wrap {
+            max-width: 1200px; width: 100%;
+            background: white; border-radius: 16px;
+            box-shadow: 0 8px 25px rgba(0,0,0,0.08);
+            padding: 22px;
+            overflow-x: auto;
+            margin-bottom: 30px;
+            display: none;
+        }
+        .timetable-wrap.visible { display: block; }
+
+        .tt-header {
+            display: flex; justify-content: space-between; align-items: center;
+            margin-bottom: 16px; flex-wrap: wrap; gap: 10px;
+        }
+        .tt-header h2 { color: #173b70; font-size: 20px; }
+        .tt-header .meta { color: #7a94a8; font-size: 13px; }
+
+        table.tt {
+            width: 100%; border-collapse: collapse;
+            min-width: 800px;
+        }
+        table.tt th, table.tt td {
+            border: 1px solid #e2ecf7;
+            padding: 10px 12px; font-size: 13px;
+            text-align: center; vertical-align: middle;
+        }
+        table.tt thead th {
+            background: #2864c7; color: white;
+            font-size: 13.5px; font-weight: 600;
+        }
+        table.tt tbody th {
+            background: #eef4ff; color: #173b70;
+            font-weight: 700; font-size: 13px;
+            width: 90px;
+        }
+        table.tt td {
+            background: #f9fcff; color: #173b70;
+            min-width: 130px;
+        }
+        table.tt td.filled {
+            background: linear-gradient(135deg, #eaf1fa, #dcecff);
+            border-left: 3px solid #2864c7;
+        }
+        table.tt td .subject {
+            font-weight: 700; color: #2864c7; display: block;
+            margin-bottom: 3px;
+        }
+        table.tt td .faculty {
+            font-size: 12px; color: #527a9b;
+        }
+        table.tt td .room {
+            display: block; margin-top: 2px;
+            font-size: 11px; color: #b06f00; font-weight: 600;
+        }
+        table.tt td.empty { color: #b8c8d8; font-style: italic; }
+
+        .legend {
+            display: flex; gap: 20px; flex-wrap: wrap;
+            justify-content: center; margin-bottom: 16px;
+            color: #527a9b; font-size: 13px;
+        }
+        .legend span { display: inline-flex; align-items: center; gap: 6px; }
+        .legend .dot {
+            width: 10px; height: 10px; border-radius: 50%;
+            background: #2864c7;
+        }
+        .legend .dot.room {
+            background: #b06f00;
+        }
+
+        .spinner {
+            display: inline-block; width: 16px; height: 16px;
+            border: 3px solid rgba(40,100,199,0.25);
+            border-radius: 50%;
+            border-top-color: #2864c7;
+            animation: spin 0.8s linear infinite;
+            vertical-align: middle; margin-right: 8px;
+        }
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        @media (max-width: 900px) {
+            .form-card { grid-template-columns: repeat(2, 1fr); }
+            .stats { grid-template-columns: repeat(2, 1fr); }
+        }
+        @media (max-width: 550px) {
+            body { padding: 20px; }
+            h1 { font-size: 24px; }
+            .form-card { grid-template-columns: 1fr; }
+            .top-bar { flex-direction: column; align-items: stretch; }
+            .top-bar a { text-align: center; }
+            .btn { width: 100%; }
+            .btn-row { flex-direction: column; }
+            .stats { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="top-bar">
+        <a href="admin.html">Back to Admin</a>
+        <a href="timetable.html">View Saved Timetables</a>
+        <a href="index.html">Logout</a>
+    </div>
+
+    <h1>Generate Timetable</h1>
+    <p class="subtitle">Clash-free across teachers (any subject) and classrooms.</p>
+
+    <div class="form-card">
+        <div>
+            <span class="label">Course</span>
+            <select id="gCourse" onchange="onCourseChange()">
+                <option value="">Select Course</option>
+            </select>
+        </div>
+        <div>
+            <span class="label">Division</span>
+            <select id="gDivision" onchange="updateButtons()" disabled>
+                <option value="">All Divisions</option>
+            </select>
+        </div>
+        <div>
+            <span class="label">Days per Week</span>
+            <select id="gDays">
+                <option value="5">Mon – Fri (5)</option>
+                <option value="6" selected>Mon – Sat (6)</option>
+            </select>
+        </div>
+        <div>
+            <span class="label">Periods per Day</span>
+            <select id="gPeriods">
+                <option value="4">4</option>
+                <option value="5">5</option>
+                <option value="6" selected>6</option>
+                <option value="7">7</option>
+                <option value="8">8</option>
+            </select>
+        </div>
+
+        <div class="btn-row">
+            <button class="btn btn-primary" id="btnGenerate" onclick="generate()" disabled>
+                ⚙️ Generate Timetable
+            </button>
+            <button class="btn btn-success" id="btnSave" onclick="saveTimetable()" disabled>
+                💾 Save
+            </button>
+            <button class="btn btn-warn" onclick="toggleDebug()">🐞 Debug</button>
+            <button class="btn btn-secondary" onclick="resetAll()">↺ Reset</button>
+        </div>
+    </div>
+
+    <p id="status">Select a course to begin.</p>
+
+    <pre id="debugBox"></pre>
+
+    <div class="stats" id="stats">
+        <div class="stat-box"><div class="k">Divisions</div><div class="v" id="statDivisions">0</div></div>
+        <div class="stat-box"><div class="k">Faculty</div><div class="v" id="statFaculty">0</div></div>
+        <div class="stat-box"><div class="k">Subjects</div><div class="v" id="statSubjects">0</div></div>
+        <div class="stat-box"><div class="k">Slots Filled</div><div class="v" id="statSlots">0</div></div>
+    </div>
+
+    <div class="timetable-wrap" id="ttWrap">
+        <div id="ttBody"></div>
+    </div>
+
+    <script src="data.js"></script>
+    <script>
+        // =========================================================
+        //   CSP TIMETABLE GENERATOR
+        //   ---------------------------------------------------------
+        //   HARD CONSTRAINTS:
+        //   1. One teacher cannot teach 2 divisions at the same day+period
+        //      (regardless of subject).
+        //   2. One division cannot have 2 subjects at the same day+period.
+        //   3. One ROOM cannot host 2 divisions at the same day+period.
+        //   4. Faculty only teaches the subjects assigned to them.
+        //
+        //   SOFT CONSTRAINTS (scored):
+        //   A. Spread subjects — avoid same subject twice in a day.
+        //   B. Balance faculty load across days.
+        // =========================================================
+
+        const DAY_NAMES = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+
+        function safeLoad(key) {
+            try {
+                if (typeof loadList === 'function') {
+                    const v = loadList(key);
+                    return Array.isArray(v) ? v : [];
+                }
+            } catch (e) {}
+            try { return JSON.parse(localStorage.getItem(key) || '[]'); }
+            catch (e) { return []; }
+        }
+        function safeSave(key, arr) {
+            try {
+                if (typeof saveList === 'function') { saveList(key, arr); return; }
+            } catch (e) {}
+            localStorage.setItem(key, JSON.stringify(arr));
+        }
+        function safeEscape(s) {
+            return String(s ?? '')
+                .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;').replace(/'/g, '&#39;');
+        }
+
+        let courses   = [];
+        let divisions = [];
+        let teachers  = [];
+        let classes   = [];
+        let currentSolution = null;
+
+        // ---- Debug ----
+        const debugLines = [];
+        function dbg(msg) {
+            console.log('[TT]', msg);
+            debugLines.push(typeof msg === 'string' ? msg : JSON.stringify(msg));
+            if (debugLines.length > 300) debugLines.shift();
+            const box = document.getElementById('debugBox');
+            if (box) box.textContent = debugLines.join('\n');
+        }
+        function toggleDebug() {
+            document.getElementById('debugBox').classList.toggle('visible');
+        }
+
+        function reloadData() {
+            courses   = safeLoad('courses');
+            divisions = safeLoad('divisions');
+            teachers  = safeLoad('teachers');
+            classes   = safeLoad('classes');
+            dbg('=== DATA RELOADED ===');
+            dbg('Courses:   ' + courses.length);
+            dbg('Divisions: ' + divisions.length);
+            dbg('Teachers:  ' + teachers.length);
+            dbg('Classes:   ' + classes.length);
+            dbg('Sample teacher: ' + JSON.stringify(teachers[0] || null));
+            dbg('Sample class:   ' + JSON.stringify(classes[0] || null));
+        }
+
+        // ---- Setup ----
+        function fillCourseDropdown() {
+            reloadData();
+            const sel = document.getElementById('gCourse');
+            sel.innerHTML = `<option value="">Select Course</option>`;
+            courses.forEach(c => {
+                const opt = document.createElement('option');
+                opt.value = c.name;
+                opt.textContent = `${c.name}${c.code ? ' (' + c.code + ')' : ''}`;
+                sel.appendChild(opt);
+            });
+            if (courses.length === 0) {
+                setStatus('⚠️ No courses found. Add courses first.', 'warn');
+            }
+        }
+
+        function onCourseChange() {
+            const course = document.getElementById('gCourse').value;
+            const dSel = document.getElementById('gDivision');
+            dSel.innerHTML = `<option value="">All Divisions</option>`;
+
+            if (course) {
+                const filtered = divisions.filter(d =>
+                    (d.course || '').toLowerCase() === course.toLowerCase()
+                );
+                filtered.forEach(d => {
+                    const opt = document.createElement('option');
+                    opt.value = d.name;
+                    opt.textContent = `Division ${d.name}`;
+                    dSel.appendChild(opt);
+                });
+                dSel.disabled = filtered.length === 0;
+            } else {
+                dSel.disabled = true;
+            }
+
+            updateButtons();
+            hideAll();
+            setStatus(course ? 'Ready to generate.' : 'Select a course to begin.');
+        }
+
+        function updateButtons() {
+            const course = document.getElementById('gCourse').value;
+            document.getElementById('btnGenerate').disabled = !course;
+            document.getElementById('btnSave').disabled = true;
+        }
+
+        function hideAll() {
+            document.getElementById('stats').classList.remove('visible');
+            document.getElementById('ttWrap').classList.remove('visible');
+            document.getElementById('ttBody').innerHTML = '';
+        }
+
+        function setStatus(msg, type) {
+            const el = document.getElementById('status');
+            el.className = type || '';
+            el.innerHTML = msg;
+        }
+
+        // ---------- Room per class ----------
+        // A class may have { class, course, division, room? }
+        // If room is missing, we use the class name (e.g., "101") as the room.
+        function roomOfClass(cls) {
+            return (cls.room && String(cls.room).trim()) || cls.class;
+        }
+
+        // ---------- Build data matrix ----------
+        function buildCourseData(courseName, divisionFilter) {
+            let courseDivisions = divisions
+                .filter(d => (d.course || '').toLowerCase() === courseName.toLowerCase())
+                .map(d => d.name);
+
+            if (divisionFilter) {
+                courseDivisions = courseDivisions.filter(d =>
+                    d.toLowerCase() === divisionFilter.toLowerCase()
+                );
+            }
+
+            const courseFaculty = teachers.filter(t =>
+                (t.course || '').toLowerCase() === courseName.toLowerCase()
+            );
+
+            // subject → faculty  |  key = "division|subject"
+            const subjectFacultyByDiv = {};
+            // Division → available subjects
+            const divisionSubjects = {};
+            // Division → its room (from classes list)
+            const divisionRoom = {};
+
+            courseDivisions.forEach(div => {
+                const subs = new Set();
+
+                courseFaculty
+                    .filter(t => (t.division || '').toLowerCase() === div.toLowerCase())
+                    .forEach(t => {
+                        const subj = t.subject;
+                        if (!subj) return;
+                        subs.add(subj);
+                        const key = div.toLowerCase() + '|' + subj.toLowerCase();
+                        // If the same teacher teaches another subject, still map it here.
+                        // If two teachers teach the same subject to the same division,
+                        // keep the first one — but log a warning.
+                        if (subjectFacultyByDiv[key] && subjectFacultyByDiv[key] !== t.name) {
+                            dbg(`⚠️ Division ${div} subject "${subj}" taught by multiple teachers. Using first: ${subjectFacultyByDiv[key]}`);
+                        } else {
+                            subjectFacultyByDiv[key] = t.name;
+                        }
+                    });
+
+                // Fallback: if division has no specific faculty, use course-wide subjects
+                if (subs.size === 0) {
+                    courseFaculty.forEach(t => {
+                        if (!t.subject) return;
+                        subs.add(t.subject);
+                        const key = div.toLowerCase() + '|' + t.subject.toLowerCase();
+                        if (!subjectFacultyByDiv[key]) subjectFacultyByDiv[key] = t.name;
+                    });
+                    if (subs.size > 0) {
+                        dbg(`⚠️ Division "${div}" has no specific faculty. Using course-wide subjects.`);
+                    }
+                }
+
+                divisionSubjects[div] = [...subs];
+
+                // Find a room for this division from `classes` list
+                // Priority: a class in this course+division with a room.
+                const divClasses = classes.filter(c =>
+                    (c.course || '').toLowerCase() === courseName.toLowerCase() &&
+                    (c.division || '').toLowerCase() === div.toLowerCase()
+                );
+
+                if (divClasses.length > 0) {
+                    // Use the first class's room
+                    divisionRoom[div] = roomOfClass(divClasses[0]);
+                } else {
+                    // Fallback: use division name as a virtual room
+                    // (still prevents two divisions of the same name in different courses
+                    //  from clashing — but that case doesn't exist since we group by course)
+                    divisionRoom[div] = 'Room-' + div;
+                }
+            });
+
+            const facultyNames = [...new Set(courseFaculty.map(t => t.name))];
+
+            return {
+                divisions: courseDivisions,
+                divisionSubjects,
+                subjectFacultyByDiv,
+                divisionRoom,
+                facultyNames
+            };
+        }
+
+        // ---------- Load saved busy maps ----------
+        function loadSavedBusy(courseName, excludeDivisions) {
+            const facultyBusy = {};
+            const roomBusy = {};
+            const saved = safeLoad('timetables');
+
+            saved
+                .filter(t => (t.course || '').toLowerCase() === courseName.toLowerCase())
+                .filter(t => !excludeDivisions.some(d =>
+                    d.toLowerCase() === (t.division || '').toLowerCase()))
+                .forEach(t => {
+                    (t.grid || []).forEach((row, d) => {
+                        row.forEach((cell, p) => {
+                            if (!cell) return;
+                            if (cell.faculty) facultyBusy[cell.faculty + '|' + d + '|' + p] = true;
+                            if (cell.room)    roomBusy[cell.room + '|' + d + '|' + p] = true;
+                        });
+                    });
+                });
+
+            return { facultyBusy, roomBusy };
+        }
+
+        // ---------- CSP Solver ----------
+        function solve(courseName, days, periods, divisionFilter) {
+            dbg('--- SOLVE START ---');
+            dbg(`Course: ${courseName} | Days: ${days} | Periods: ${periods} | Division: ${divisionFilter || 'ALL'}`);
+
+            const data = buildCourseData(courseName, divisionFilter);
+
+            dbg('Divisions: ' + data.divisions.join(', '));
+            dbg('Faculty: ' + data.facultyNames.join(', '));
+            dbg('Rooms: ' + JSON.stringify(data.divisionRoom));
+
+            if (data.divisions.length === 0) {
+                return { ok: false, reason: 'No divisions found for this course.' };
+            }
+            for (const div of data.divisions) {
+                if (data.divisionSubjects[div].length === 0) {
+                    return { ok: false, reason: `Division "${div}" has no subjects. Add faculty with subjects.` };
+                }
+            }
+
+            // Variables
+            const variables = [];
+            for (const div of data.divisions) {
+                const subs = data.divisionSubjects[div];
+                for (let d = 0; d < days; d++) {
+                    for (let p = 0; p < periods; p++) {
+                        variables.push({ div, day: d, period: p, domain: [...subs] });
+                    }
+                }
+            }
+            dbg('Total variables: ' + variables.length);
+
+            const { facultyBusy, roomBusy } = loadSavedBusy(courseName, data.divisions);
+            const facultyCountByDay = {};
+            const subjectUsedToday  = {};
+            const assignment        = {};
+
+            const keyOf = v => v.div + '|' + v.day + '|' + v.period;
+
+            function facultyOf(div, subject) {
+                return data.subjectFacultyByDiv[div.toLowerCase() + '|' + subject.toLowerCase()];
+            }
+            function roomOf(div) {
+                return data.divisionRoom[div];
+            }
+
+            function valueScore(v, subject) {
+                const faculty = facultyOf(v.div, subject);
+                let score = 0;
+                if (subjectUsedToday[v.div + '|' + v.day + '|' + subject]) score += 100;
+                const dayLoad = facultyCountByDay[faculty + '|' + v.day] || 0;
+                score += dayLoad * 2;
+                return score;
+            }
+
+            function orderValues(v) {
+                return [...v.domain]
+                    .map(s => ({ s, score: valueScore(v, s) }))
+                    .sort((a, b) => a.score - b.score)
+                    .map(x => x.s);
+            }
+
+            function isFeasible(v, subject) {
+                const faculty = facultyOf(v.div, subject);
+                const room = roomOf(v.div);
+                if (!faculty) return false;
+                // Hard 1: teacher busy?
+                if (facultyBusy[faculty + '|' + v.day + '|' + v.period]) return false;
+                // Hard 3: room busy?
+                if (roomBusy[room + '|' + v.day + '|' + v.period]) return false;
+                // Hard 4: subject already used today in this division? (soft but enforced)
+                if (subjectUsedToday[v.div + '|' + v.day + '|' + subject]) return false;
+                return true;
+            }
+
+            function selectUnassigned() {
+                let best = null, bestLen = Infinity;
+                for (const v of variables) {
+                    if (assignment[keyOf(v)]) continue;
+                    let count = 0;
+                    for (const s of v.domain) if (isFeasible(v, s)) count++;
+                    if (count < bestLen) {
+                        bestLen = count;
+                        best = v;
+                        if (count === 0) break;
+                    }
+                }
+                return best;
+            }
+
+            function assign(v, subject) {
+                const faculty = facultyOf(v.div, subject);
+                const room = roomOf(v.div);
+                assignment[keyOf(v)] = { subject, faculty, room };
+                facultyBusy[faculty + '|' + v.day + '|' + v.period] = true;
+                roomBusy[room + '|' + v.day + '|' + v.period] = true;
+                facultyCountByDay[faculty + '|' + v.day] = (facultyCountByDay[faculty + '|' + v.day] || 0) + 1;
+                subjectUsedToday[v.div + '|' + v.day + '|' + subject] = true;
+            }
+
+            function unassign(v) {
+                const k = keyOf(v);
+                const cell = assignment[k];
+                if (!cell) return;
+                delete assignment[k];
+                delete facultyBusy[cell.faculty + '|' + v.day + '|' + v.period];
+                delete roomBusy[cell.room + '|' + v.day + '|' + v.period];
+                facultyCountByDay[cell.faculty + '|' + v.day]--;
+                delete subjectUsedToday[v.div + '|' + v.day + '|' + cell.subject];
+            }
+
+            function forwardCheckOk() {
+                for (const v of variables) {
+                    if (assignment[keyOf(v)]) continue;
+                    let hasAny = false;
+                    for (const s of v.domain) if (isFeasible(v, s)) { hasAny = true; break; }
+                    if (!hasAny) return false;
+                }
+                return true;
+            }
+
+            let nodes = 0;
+            const MAX_NODES = 200000;
+
+            function backtrack() {
+                nodes++;
+                if (nodes > MAX_NODES) throw new Error('limit');
+                const v = selectUnassigned();
+                if (!v) return true;
+                for (const subject of orderValues(v)) {
+                    if (!isFeasible(v, subject)) continue;
+                    assign(v, subject);
+                    if (forwardCheckOk() && backtrack()) return true;
+                    unassign(v);
+                }
+                return false;
+            }
+
+            let solved = false;
+            try { solved = backtrack(); } catch (e) { dbg('Strict stopped: ' + e.message); }
+
+            dbg('Strict: ' + (solved ? 'SOLVED' : 'failed') + ' (nodes=' + nodes + ')');
+
+            // Relaxed fallback: allow same subject twice in a day, but keep
+            // faculty & room constraints strict.
+            if (!solved) {
+                dbg('Relaxing "subject not repeated same day"…');
+                for (const k in assignment) delete assignment[k];
+                for (const k in facultyBusy) delete facultyBusy[k];
+                for (const k in roomBusy) delete roomBusy[k];
+                for (const k in facultyCountByDay) delete facultyCountByDay[k];
+                for (const k in subjectUsedToday) delete subjectUsedToday[k];
+                const reloaded = loadSavedBusy(courseName, data.divisions);
+                Object.assign(facultyBusy, reloaded.facultyBusy);
+                Object.assign(roomBusy, reloaded.roomBusy);
+
+                const relaxedFeasible = (v, subject) => {
+                    const faculty = facultyOf(v.div, subject);
+                    const room = roomOf(v.div);
+                    if (!faculty) return false;
+                    if (facultyBusy[faculty + '|' + v.day + '|' + v.period]) return false;
+                    if (roomBusy[room + '|' + v.day + '|' + v.period]) return false;
+                    return true;
+                };
+                const relaxedFC = () => {
+                    for (const v of variables) {
+                        if (assignment[keyOf(v)]) continue;
+                        let hasAny = false;
+                        for (const s of v.domain) if (relaxedFeasible(v, s)) { hasAny = true; break; }
+                        if (!hasAny) return false;
+                    }
+                    return true;
+                };
+                const selectRelaxed = () => {
+                    let best = null, bestLen = Infinity;
+                    for (const v of variables) {
+                        if (assignment[keyOf(v)]) continue;
+                        let count = 0;
+                        for (const s of v.domain) if (relaxedFeasible(v, s)) count++;
+                        if (count < bestLen) {
+                            bestLen = count;
+                            best = v;
+                            if (count === 0) break;
+                        }
+                    }
+                    return best;
+                };
+                const relaxedBacktrack = () => {
+                    nodes++;
+                    if (nodes > MAX_NODES) throw new Error('limit');
+                    const v = selectRelaxed();
+                    if (!v) return true;
+                    const ordered = [...v.domain].sort((a, b) => {
+                        const fa = facultyOf(v.div, a);
+                        const fb = facultyOf(v.div, b);
+                        const la = facultyCountByDay[fa + '|' + v.day] || 0;
+                        const lb = facultyCountByDay[fb + '|' + v.day] || 0;
+                        return la - lb;
+                    });
+                    for (const subject of ordered) {
+                        if (!relaxedFeasible(v, subject)) continue;
+                        assign(v, subject);
+                        if (relaxedFC() && relaxedBacktrack()) return true;
+                        unassign(v);
+                    }
+                    return false;
+                };
+
+                try { solved = relaxedBacktrack(); } catch (e) { dbg('Relaxed stopped: ' + e.message); }
+                dbg('Relaxed: ' + (solved ? 'SOLVED' : 'failed'));
+            }
+
+            if (!solved) {
+                return { ok: false, reason: 'No clash-free timetable exists. Add more faculty, more rooms, or reduce periods.' };
+            }
+
+            // Build grids
+            const result = {};
+            for (const div of data.divisions) {
+                const grid = [];
+                for (let d = 0; d < days; d++) {
+                    const row = [];
+                    for (let p = 0; p < periods; p++) {
+                        row.push(assignment[div + '|' + d + '|' + p] || null);
+                    }
+                    grid.push(row);
+                }
+                result[div] = grid;
+            }
+
+            dbg('--- SOLVE END: SUCCESS ---');
+
+            return {
+                ok: true,
+                course: courseName,
+                days, periods,
+                divisions: data.divisions,
+                gridByDivision: result,
+                facultyCount: data.facultyNames.length,
+                subjectCount: Object.keys(data.subjectFacultyByDiv).length,
+                nodesSearched: nodes
+            };
+        }
+
+        // ---------- Generate ----------
+        function generate() {
+            const course = document.getElementById('gCourse').value;
+            const divisionFilter = document.getElementById('gDivision').value;
+            const days = parseInt(document.getElementById('gDays').value, 10);
+            const periods = parseInt(document.getElementById('gPeriods').value, 10);
+
+            if (!course) {
+                setStatus('⚠️ Select a course first.', 'warn');
+                return;
+            }
+
+            setStatus('<span class="spinner"></span> Solving…');
+
+            setTimeout(() => {
+                try {
+                    const t0 = performance.now();
+                    const result = solve(course, days, periods, divisionFilter);
+                    const t1 = performance.now();
+                    const ms = Math.round(t1 - t0);
+
+                    if (!result.ok) {
+                        setStatus('❌ ' + result.reason, 'error');
+                        hideAll();
+                        document.getElementById('btnSave').disabled = true;
+                        currentSolution = null;
+                        return;
+                    }
+
+                    currentSolution = result;
+                    renderSolution(result);
+                    setStatus(
+                        `✅ Generated in ${ms} ms · ${result.nodesSearched.toLocaleString()} nodes · ${result.divisions.length} division(s).`,
+                        'success'
+                    );
+                    document.getElementById('btnSave').disabled = false;
+                } catch (err) {
+                    console.error(err);
+                    dbg('❌ EXCEPTION: ' + err.message);
+                    dbg(err.stack || '');
+                    setStatus('❌ Error: ' + err.message + ' — open Debug.', 'error');
+                }
+            }, 30);
+        }
+
+        // ---------- Render ----------
+        function renderSolution(result) {
+            document.getElementById('stats').classList.add('visible');
+            document.getElementById('statDivisions').textContent = result.divisions.length;
+            document.getElementById('statFaculty').textContent = result.facultyCount;
+            document.getElementById('statSubjects').textContent = result.subjectCount;
+
+            let slotCount = 0;
+            result.divisions.forEach(div => {
+                result.gridByDivision[div].forEach(row => {
+                    row.forEach(cell => { if (cell) slotCount++; });
+                });
+            });
+            document.getElementById('statSlots').textContent = slotCount;
+
+            const wrap = document.getElementById('ttBody');
+            wrap.innerHTML = result.divisions.map(div => {
+                const grid = result.gridByDivision[div];
+                let html = `
+                    <div class="tt-header">
+                        <h2>${safeEscape(result.course)} — Division ${safeEscape(div)}</h2>
+                        <p class="meta">${result.days} days × ${result.periods} periods</p>
+                    </div>
+                    <div class="legend">
+                        <span><span class="dot"></span> Assigned slot</span>
+                        <span><span class="dot room"></span> Room</span>
+                    </div>
+                    <table class="tt"><thead><tr><th>Day</th>`;
+                for (let p = 0; p < result.periods; p++) {
+                    html += `<th>Period ${p + 1}</th>`;
+                }
+                html += `</tr></thead><tbody>`;
+
+                for (let d = 0; d < result.days; d++) {
+                    html += `<tr><th>${DAY_NAMES[d]}</th>`;
+                    for (let p = 0; p < result.periods; p++) {
+                        const cell = grid[d][p];
+                        if (cell) {
+                            html += `
+                                <td class="filled">
+                                    <span class="subject">${safeEscape(cell.subject)}</span>
+                                    <span class="faculty">${safeEscape(cell.faculty)}</span>
+                                    <span class="room">🏫 ${safeEscape(cell.room || '—')}</span>
+                                </td>`;
+                        } else {
+                            html += `<td class="empty">—</td>`;
+                        }
+                    }
+                    html += `</tr>`;
+                }
+                html += `</tbody></table><div style="height:30px"></div>`;
+                return html;
+            }).join('');
+
+            document.getElementById('ttWrap').classList.add('visible');
+        }
+
+        // ---------- Save ----------
+        function saveTimetable() {
+            if (!currentSolution) return;
+            const all = safeLoad('timetables');
+
+            const filtered = all.filter(t => {
+                const sameCourse = (t.course || '').toLowerCase() === currentSolution.course.toLowerCase();
+                const sameDiv = currentSolution.divisions.some(d =>
+                    d.toLowerCase() === (t.division || '').toLowerCase());
+                return !(sameCourse && sameDiv);
+            });
+
+            const now = new Date().toISOString();
+            for (const div of currentSolution.divisions) {
+                filtered.push({
+                    course: currentSolution.course,
+                    division: div,
+                    days: currentSolution.days,
+                    periods: currentSolution.periods,
+                    grid: currentSolution.gridByDivision[div],
+                    savedAt: now
+                });
+            }
+
+            safeSave('timetables', filtered);
+            setStatus('💾 Saved. View in "View Saved Timetables".', 'success');
+            document.getElementById('btnSave').disabled = true;
+        }
+
+        // ---------- Reset ----------
+        function resetAll() {
+            document.getElementById('gCourse').value = '';
+            document.getElementById('gDivision').innerHTML = `<option value="">All Divisions</option>`;
+            document.getElementById('gDivision').disabled = true;
+            document.getElementById('gDays').value = '6';
+            document.getElementById('gPeriods').value = '6';
+            currentSolution = null;
+            document.getElementById('btnGenerate').disabled = true;
+            document.getElementById('btnSave').disabled = true;
+            hideAll();
+            setStatus('Select a course to begin.');
+        }
+
+        // ---------- Init ----------
+        window.addEventListener('DOMContentLoaded', () => {
+            fillCourseDropdown();
+        });
+    </script>
+
+</body>
+</html>

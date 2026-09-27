@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Time Table Management System</title>
+</head>
+
+<body>
+
+     <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+
+            background: #eef4ff;
+
+            position: relative;
+            overflow: hidden;
+        }
+
+        /* Simple background animation */
+        body::before {
+            content: "";
+            position: absolute;
+
+            width: 500px;
+            height: 500px;
+
+            background: #c7dcff;
+            border-radius: 50%;
+
+            top: -200px;
+            right: -150px;
+
+            animation: move 8s ease-in-out infinite alternate;
+        }
+
+        body::after {
+            content: "";
+            position: absolute;
+
+            width: 400px;
+            height: 400px;
+
+            background: #d8f3ff;
+            border-radius: 50%;
+
+            bottom: -180px;
+            left: -120px;
+
+            animation: move 10s ease-in-out infinite alternate-reverse;
+        }
+
+        @keyframes move {
+            from {
+                transform: translate(0, 0);
+            }
+
+            to {
+                transform: translate(-30px, 30px);
+            }
+        }
+
+        /* Main box */
+        .container {
+            position: relative;
+            z-index: 1;
+
+            width: 550px;
+            padding: 45px;
+
+            text-align: center;
+
+            background: white;
+
+            border-radius: 16px;
+
+            box-shadow: 0 10px 35px rgba(0, 0, 0, 0.10);
+        }
+
+        h1 {
+            color: #173b70;
+
+            font-size: 30px;
+
+            margin-bottom: 30px;
+        }
+
+        label {
+            display: block;
+
+            color: #333;
+
+            font-size: 17px;
+
+            margin-bottom: 10px;
+        }
+
+        select {
+            width: 80%;
+
+            padding: 12px;
+
+            font-size: 16px;
+
+            border: 1px solid #b8c7dc;
+
+            border-radius: 8px;
+
+            outline: none;
+
+            background: white;
+
+            color: #333;
+
+            cursor: pointer;
+        }
+
+        select:focus {
+            border-color: #2864c7;
+        }
+
+        .timetable-btn {
+            display: inline-block;
+
+            margin-top: 25px;
+
+            padding: 12px 24px;
+
+            background: #2864c7;
+
+            color: white;
+
+            text-decoration: none;
+
+            border-radius: 8px;
+
+            font-size: 16px;
+
+            transition: 0.3s;
+        }
+        .timetable-btn:hover {
+            background: #173f85;
+
+            transform: translateY(-2px);
+        }
+
+        .admin-btn {
+            display: inline-block;
+
+            margin-top: 25px;
+
+            padding: 12px 24px;
+
+            background: #2864c7;
+
+            color: white;
+
+            text-decoration: none;
+
+            border-radius: 8px;
+
+            font-size: 16px;
+
+            transition: 0.3s;
+        }
+
+        .admin-btn:hover {
+            background: #173f85;
+
+            transform: translateY(-2px);
+        }
+    </style>
+
+    <div class="container">
+
+        <h1>Time Table Management System</h1>
+
+        <label for="course">Choose your course:</label>
+
+        <select id="course" name="course">
+
+            <option value="">-- Select Course --</option>
+
+            <option value="cse">
+                Computer Science
+            </option>
+
+            <option value="mechanical">
+                Mechanical Engineering
+            </option>
+
+            <option value="civil">
+                Civil Engineering
+            </option>
+
+            <option value="ece">
+                Electronics Engineering
+            </option>
+
+        </select>
+
+        <label for="course">Choose your course:</label>
+        <select id="division" name="division">
+
+            <option value="">-- Select Division --</option>
+
+        </select>
+        <br>
+       <a href="#" class="timetable-btn" id="timetableBtn">
+    Go to Time Table
+</a>
+
+        <a href="login.html" class="admin-btn">
+            Go to Admin Panel
+        </a>
+
+    </div>
+
+    
+
+    <script>
+
+    const course = document.getElementById("course");
+    const division = document.getElementById("division");
+    const timetableBtn = document.getElementById("timetableBtn");
+
+
+    // Course selection
+    course.addEventListener("change", function () {
+
+        // Clear previous divisions
+        division.innerHTML = '<option value="">-- Select Division --</option>';
+
+        if (course.value === "cse") {
+
+            division.innerHTML += `
+                <option value="cse-a">CSE-A</option>
+                <option value="cse-b">CSE-B</option>
+                <option value="cse-c">CSE-C</option>
+            `;
+
+        }
+
+        else if (course.value === "mechanical") {
+
+            division.innerHTML += `
+                <option value="mech-a">MECH-A</option>
+                <option value="mech-b">MECH-B</option>
+            `;
+
+        }
+
+        else if (course.value === "civil") {
+
+            division.innerHTML += `
+                <option value="civil-a">CIVIL-A</option>
+                <option value="civil-b">CIVIL-B</option>
+            `;
+
+        }
+
+        else if (course.value === "ece") {
+
+            division.innerHTML += `
+                <option value="ece-a">ECE-A</option>
+                <option value="ece-b">ECE-B</option>
+            `;
+
+        }
+
+    });
+
+
+    // Go to timetable
+    timetableBtn.addEventListener("click", function (event) {
+
+        event.preventDefault();
+
+        const selectedCourse = course.value;
+        const selectedDivision = division.value;
+
+
+        // Check course
+        if (selectedCourse === "") {
+
+            alert("Please select a course.");
+            return;
+
+        }
+
+
+        // Check division
+        if (selectedDivision === "") {
+
+            alert("Please select a division.");
+            return;
+
+        }
+
+
+        // Open timetable with selected course and division
+        window.location.href =
+            "timetable1.html?course=" + selectedCourse +
+            "&division=" + selectedDivision;
+
+    });
+
+</script>
+
+
+
+</body>
+
+</html>
