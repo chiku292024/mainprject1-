@@ -10,23 +10,28 @@
     <a href="index.html">Logout</a> 
 
    
-    <div class="dashboard">
-        <div>
-        <h3> Total no of Students: 100</h3>
-        <a href = "students.html">Manage Students</a></div>
-        <div>
-        <h3> Total no of Teachers: 20</h3>
-        <a href = "teachers.html">Manage Teachers</a></div>
-        <div>
-        <h3> Total no of Courses: 10</h3>
-        <a href = "courses.html">Manage Courses</a></div>
-        <div>
-        <h3> Total no of Classes: 15</h3>
-        <a href = "classes.html">Manage Classes</a></div>
-        <div>
-        <h3> Total no of Divisions: 5</h3>
-        <a href = "divisions.html">Manage Divisions</a></div>
+   <div class="dashboard">
+    <div>
+        <h3> Total no of Students: <span id="studentCount">0</span></h3>
+        <a href="students.html">Manage Students</a>
     </div>
+    <div>
+        <h3> Total no of Teachers: <span id="teacherCount">0</span></h3>
+        <a href="teachers.html">Manage Teachers</a>
+    </div>
+    <div>
+        <h3> Total no of Courses: <span id="courseCount">0</span></h3>
+        <a href="courses.html">Manage Courses</a>
+    </div>
+    <div>
+        <h3> Total no of Classes: <span id="classCount">0</span></h3>
+        <a href="classes.html">Manage Classes</a>
+    </div>
+    <div>
+        <h3> Total no of Divisions: <span id="divisionCount">0</span></h3>
+        <a href="divisions.html">Manage Divisions</a>
+    </div>
+</div>
     <br> <br>
  <p>To generate a timetable, click the button below:</p><br>
     <a href="timetable_generator.html" class =mk>Generate Timetable</a>
@@ -322,7 +327,13 @@
     }
 
 </style>
-
-</style>
+<script src="data.js"></script>
+<script>
+    document.getElementById('studentCount').textContent  = adminData.students;
+    document.getElementById('teacherCount').textContent  = adminData.teachers;
+    document.getElementById('courseCount').textContent   = adminData.courses;
+    document.getElementById('classCount').textContent    = adminData.classes;
+    document.getElementById('divisionCount').textContent = adminData.divisions;
+</script>
 </body>
 </html>
