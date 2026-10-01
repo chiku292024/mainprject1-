@@ -1,0 +1,635 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Help — Time Table Management System</title>
+</head>
+
+<body>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Arial, sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: flex-start;
+
+            padding: 50px 20px;
+
+            background: #eef4ff;
+            position: relative;
+            overflow-x: hidden;
+        }
+
+        /* ---------- Background blobs ---------- */
+        body::before {
+            content: "";
+            position: absolute;
+            width: 500px;
+            height: 500px;
+            background: #c7dcff;
+            border-radius: 50%;
+            top: -200px;
+            right: -150px;
+            will-change: transform;
+            transform: translate3d(0, 0, 0);
+            animation: move 12s ease-in-out infinite alternate;
+        }
+
+        body::after {
+            content: "";
+            position: absolute;
+            width: 400px;
+            height: 400px;
+            background: #d8f3ff;
+            border-radius: 50%;
+            bottom: -180px;
+            left: -120px;
+            will-change: transform;
+            transform: translate3d(0, 0, 0);
+            animation: move 16s ease-in-out infinite alternate-reverse;
+        }
+
+        @keyframes move {
+            from { transform: translate3d(0, 0, 0); }
+            to   { transform: translate3d(-30px, 30px, 0); }
+        }
+
+        /* ---------- Main container ---------- */
+        .container {
+            position: relative;
+            z-index: 1;
+
+            width: 100%;
+            max-width: 720px;
+
+            padding: 42px 40px 34px;
+
+            background: white;
+            border-radius: 18px;
+
+            box-shadow: 0 10px 35px rgba(0, 0, 0, 0.10);
+
+            overflow: hidden;
+
+            animation: cardEnter 0.7s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        @keyframes cardEnter {
+            from { opacity: 0; transform: translate3d(0, 25px, 0); }
+            to   { opacity: 1; transform: translate3d(0, 0, 0); }
+        }
+
+        /* ---------- Header ---------- */
+        .header {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+
+            margin-bottom: 10px;
+
+            animation: fadeUp 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.05s both;
+        }
+
+        .header-icon {
+            width: 52px;
+            height: 52px;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            background: linear-gradient(135deg, #2864c7, #173b70);
+            color: white;
+            border-radius: 14px;
+
+            font-size: 26px;
+            font-weight: 800;
+
+            box-shadow: 0 8px 20px rgba(40, 100, 199, 0.35);
+
+            flex-shrink: 0;
+        }
+
+        .header-text h1 {
+            font-size: 26px;
+            font-weight: 800;
+            letter-spacing: -0.4px;
+
+            background: linear-gradient(135deg, #173b70 0%, #2864c7 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .header-text p {
+            color: #7c8aa0;
+            font-size: 13.5px;
+            margin-top: 2px;
+        }
+
+        /* ---------- Intro text ---------- */
+        .intro {
+            color: #4a5568;
+            font-size: 14.5px;
+            line-height: 1.65;
+
+            padding: 14px 16px;
+            margin: 20px 0 26px;
+
+            background: #f4f8ff;
+            border-left: 3px solid #2864c7;
+            border-radius: 8px;
+
+            animation: fadeUp 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.1s both;
+        }
+
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translate3d(0, 15px, 0); }
+            to   { opacity: 1; transform: translate3d(0, 0, 0); }
+        }
+
+        /* ---------- Section heading ---------- */
+        .section-title {
+            font-size: 15px;
+            font-weight: 700;
+            color: #173b70;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+
+            margin: 26px 0 14px;
+
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .section-title::after {
+            content: "";
+            flex: 1;
+            height: 1px;
+            background: linear-gradient(to right, #dbe6f5, transparent);
+        }
+
+        /* ---------- FAQ accordion ---------- */
+        .faq {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .faq-item {
+            background: #f9fbff;
+            border: 1px solid #e3ecf9;
+            border-radius: 12px;
+
+            overflow: hidden;
+
+            transition: border-color 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .faq-item:hover {
+            border-color: #b8d0f0;
+        }
+
+        .faq-item.open {
+            border-color: #2864c7;
+            box-shadow: 0 8px 20px rgba(40, 100, 199, 0.12);
+        }
+
+        .faq-question {
+            width: 100%;
+
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+
+            padding: 15px 18px;
+
+            background: none;
+            border: none;
+
+            font-size: 14.5px;
+            font-weight: 600;
+            color: #173b70;
+            text-align: left;
+
+            cursor: pointer;
+            font-family: inherit;
+
+            transition: background 0.25s ease;
+        }
+
+        .faq-question:hover {
+            background: #eef4ff;
+        }
+
+        .faq-arrow {
+            width: 22px;
+            height: 22px;
+            flex-shrink: 0;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            background: #e4eefc;
+            color: #2864c7;
+            border-radius: 50%;
+
+            font-size: 12px;
+            font-weight: 800;
+
+            transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1),
+                        background 0.3s ease;
+        }
+
+        .faq-item.open .faq-arrow {
+            transform: rotate(45deg);
+            background: #2864c7;
+            color: white;
+        }
+
+        .faq-answer {
+            max-height: 0;
+            overflow: hidden;
+
+            padding: 0 18px;
+
+            color: #5a6a82;
+            font-size: 14px;
+            line-height: 1.65;
+
+            transition: max-height 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+                        padding 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .faq-item.open .faq-answer {
+            max-height: 300px;
+            padding: 0 18px 16px;
+        }
+
+        /* ---------- Contact card ---------- */
+        .contact {
+            margin-top: 8px;
+
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .contact-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+
+            padding: 14px 16px;
+
+            background: linear-gradient(135deg, #f4f8ff, #eaf2ff);
+            border: 1px solid #dbe6f5;
+            border-radius: 12px;
+
+            text-decoration: none;
+            color: inherit;
+
+            transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+                        box-shadow 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+                        border-color 0.3s ease;
+        }
+
+        .contact-item:hover {
+            transform: translate3d(0, -3px, 0);
+            border-color: #2864c7;
+            box-shadow: 0 10px 24px rgba(40, 100, 199, 0.18);
+        }
+
+        .contact-icon {
+            width: 40px;
+            height: 40px;
+            flex-shrink: 0;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            background: white;
+            border-radius: 10px;
+
+            font-size: 18px;
+            box-shadow: 0 4px 10px rgba(40, 100, 199, 0.12);
+        }
+
+        .contact-text {
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+        }
+
+        .contact-label {
+            font-size: 11.5px;
+            color: #8b96a9;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            font-weight: 600;
+        }
+
+        .contact-value {
+            font-size: 14px;
+            color: #173b70;
+            font-weight: 600;
+            margin-top: 2px;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        /* ---------- Back button ---------- */
+        .back-btn {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+
+            width: 100%;
+
+            margin-top: 28px;
+            padding: 14px 22px;
+
+            background: #2864c7;
+            color: white;
+            text-decoration: none;
+
+            border-radius: 12px;
+
+            font-size: 15px;
+            font-weight: 600;
+
+            position: relative;
+            overflow: hidden;
+
+            will-change: transform;
+            transform: translate3d(0, 0, 0);
+            transition: background 0.3s ease,
+                        transform 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+                        box-shadow 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .back-btn:hover {
+            background: #173f85;
+            transform: translate3d(0, -3px, 0);
+            box-shadow: 0 12px 24px rgba(40, 100, 199, 0.35);
+        }
+
+        .back-btn:active {
+            transform: translate3d(0, -1px, 0);
+        }
+
+        .back-btn .arrow {
+            transition: transform 0.3s ease;
+        }
+
+        .back-btn:hover .arrow {
+            transform: translateX(-4px);
+        }
+
+        /* Ripple */
+        .ripple {
+            position: absolute;
+            border-radius: 50%;
+            transform: scale(0);
+            background: rgba(255, 255, 255, 0.55);
+            pointer-events: none;
+            animation: rippleAnim 0.6s ease-out;
+        }
+
+        @keyframes rippleAnim {
+            to { transform: scale(4); opacity: 0; }
+        }
+
+        /* ---------- Copyright ---------- */
+        .copyright {
+            margin-top: 22px;
+            padding-top: 18px;
+
+            border-top: 1px solid #eef4ff;
+
+            text-align: center;
+            font-size: 12.5px;
+            color: #8b96a9;
+            letter-spacing: 0.2px;
+        }
+
+        .copyright strong {
+            background: linear-gradient(135deg, #2864c7, #173b70);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 700;
+        }
+
+        /* ---------- Reduced motion ---------- */
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation: none !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
+
+        /* ---------- Responsive ---------- */
+        @media (max-width: 560px) {
+            body { padding: 30px 14px; }
+            .container { padding: 30px 22px 24px; }
+            .header-text h1 { font-size: 21px; }
+            .header-icon { width: 46px; height: 46px; font-size: 22px; }
+            .contact { grid-template-columns: 1fr; }
+        }
+    </style>
+
+    <div class="container">
+
+        <!-- Header -->
+        <div class="header">
+            <div class="header-icon">?</div>
+            <div class="header-text">
+                <h1>Help Center</h1>
+                <p>Everything you need to know</p>
+            </div>
+        </div>
+
+        <!-- Intro -->
+        <div class="intro">
+            Welcome to the Help Center. Below you'll find answers to common questions about
+            using the Time Table Management System. If you still need assistance, feel free
+            to reach out using the contact options at the bottom.
+        </div>
+
+        <!-- FAQ Section -->
+        <div class="section-title">Frequently Asked Questions</div>
+
+        <div class="faq">
+
+            <div class="faq-item">
+                <button class="faq-question">
+                    How do I view my timetable as a student?
+                    <span class="faq-arrow">+</span>
+                </button>
+                <div class="faq-answer">
+                    Click the <strong>Student</strong> button on the home page, select your
+                    course and division from the dropdowns, then click "Go to Timetable".
+                    Your class schedule will appear instantly.
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <button class="faq-question">
+                    How do I log in to the Admin Panel?
+                    <span class="faq-arrow">+</span>
+                </button>
+                <div class="faq-answer">
+                    Click the <strong>Admin</strong> button on the home page. You'll be taken
+                    to a secure login page where you enter your admin credentials. Only
+                    authorized staff can access the Admin Panel.
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <button class="faq-question">
+                    Can students access the Admin Panel?
+                    <span class="faq-arrow">+</span>
+                </button>
+                <div class="faq-answer">
+                    No. The Admin Panel is protected and only accessible with valid admin
+                    credentials. Students are automatically redirected if they try to access
+                    the admin pages directly.
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <button class="faq-question">
+                    How often is the timetable updated?
+                    <span class="faq-arrow">+</span>
+                </button>
+                <div class="faq-answer">
+                    Timetables are updated by admins in real time. Any change made by an
+                    admin is immediately reflected on the student view — no page refresh
+                    needed.
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <button class="faq-question">
+                    What should I do if my timetable is missing?
+                    <span class="faq-arrow">+</span>
+                </button>
+                <div class="faq-answer">
+                    Make sure you've selected the correct <strong>course</strong> and
+                    <strong>division</strong>. If the issue persists, contact the admin
+                    directly — the timetable for your division might not have been published yet.
+                </div>
+            </div>
+
+            <div class="faq-item">
+                <button class="faq-question">
+                    Is my data secure?
+                    <span class="faq-arrow">+</span>
+                </button>
+                <div class="faq-answer">
+                    Yes. Admin access is protected by login credentials, and students can
+                    only view their own course timetable. No personal data is stored or shared.
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Contact Section -->
+        <div class="section-title">Still Need Help?</div>
+
+        <div class="contact">
+
+            <a href="mailto:support@timetable.com" class="contact-item">
+                <div class="contact-icon">✉️</div>
+                <div class="contact-text">
+                    <span class="contact-label">Email</span>
+                    <span class="contact-value">support@timetable.com</span>
+                </div>
+            </a>
+
+            <a href="tel:+919999999999" class="contact-item">
+                <div class="contact-icon">📞</div>
+                <div class="contact-text">
+                    <span class="contact-label">Phone</span>
+                    <span class="contact-value">+91 99999 99999</span>
+                </div>
+            </a>
+
+        </div>
+
+        <!-- Back Button -->
+        <a href="index.html" class="back-btn" id="backBtn">
+            <span class="arrow">←</span>
+            Back to Home
+        </a>
+
+        <!-- Copyright -->
+        <div class="copyright">
+            © 2025 <strong>Aishwarya</strong>. All Rights Reserved.
+        </div>
+
+    </div>
+
+    <script>
+        /* ---------- FAQ Accordion ---------- */
+        document.querySelectorAll(".faq-question").forEach(function (btn) {
+            btn.addEventListener("click", function () {
+                const item = btn.parentElement;
+                const isOpen = item.classList.contains("open");
+
+                // Close all
+                document.querySelectorAll(".faq-item").forEach(function (el) {
+                    el.classList.remove("open");
+                });
+
+                // Open this one if it was closed
+                if (!isOpen) {
+                    item.classList.add("open");
+                }
+            });
+        });
+
+        // Open first FAQ by default
+        const firstFaq = document.querySelector(".faq-item");
+        if (firstFaq) firstFaq.classList.add("open");
+
+
+        /* ---------- Ripple on Back Button ---------- */
+        const backBtn = document.getElementById("backBtn");
+        backBtn.addEventListener("click", function (e) {
+            const rect = backBtn.getBoundingClientRect();
+            const size = Math.max(rect.width, rect.height);
+            const x = e.clientX - rect.left - size / 2;
+            const y = e.clientY - rect.top - size / 2;
+
+            const ripple = document.createElement("span");
+            ripple.className = "ripple";
+            ripple.style.width = ripple.style.height = size + "px";
+            ripple.style.left = x + "px";
+            ripple.style.top = y + "px";
+
+            backBtn.appendChild(ripple);
+            setTimeout(() => ripple.remove(), 650);
+        });
+    </script>
+
+</body>
+
+</html>

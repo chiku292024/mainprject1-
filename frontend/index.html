@@ -4,18 +4,17 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
     <title>Time Table Management System</title>
 </head>
 
 <body>
 
-     <style>
+    <style>
         * {
             margin: 0;
             padding: 0;
             box-sizing: border-box;
-            font-family: Arial, sans-serif;
+            font-family: 'Segoe UI', Arial, sans-serif;
         }
 
         body {
@@ -23,304 +22,471 @@
             display: flex;
             justify-content: center;
             align-items: center;
+            padding: 20px;
 
             background: #eef4ff;
-
             position: relative;
             overflow: hidden;
         }
 
-        /* Simple background animation */
+        /* ---------- Background blobs ---------- */
         body::before {
             content: "";
             position: absolute;
-
             width: 500px;
             height: 500px;
-
             background: #c7dcff;
             border-radius: 50%;
-
             top: -200px;
             right: -150px;
-
-            animation: move 8s ease-in-out infinite alternate;
+            will-change: transform;
+            transform: translate3d(0, 0, 0);
+            animation: move 12s ease-in-out infinite alternate;
         }
 
         body::after {
             content: "";
             position: absolute;
-
             width: 400px;
             height: 400px;
-
             background: #d8f3ff;
             border-radius: 50%;
-
             bottom: -180px;
             left: -120px;
-
-            animation: move 10s ease-in-out infinite alternate-reverse;
+            will-change: transform;
+            transform: translate3d(0, 0, 0);
+            animation: move 16s ease-in-out infinite alternate-reverse;
         }
 
         @keyframes move {
-            from {
-                transform: translate(0, 0);
-            }
-
-            to {
-                transform: translate(-30px, 30px);
-            }
+            from { transform: translate3d(0, 0, 0); }
+            to   { transform: translate3d(-30px, 30px, 0); }
         }
 
-        /* Main box */
+        /* ---------- Glow ring behind card ---------- */
+        .glow {
+            position: absolute;
+            width: 620px;
+            height: 620px;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(40, 100, 199, 0.18), transparent 65%);
+            z-index: 0;
+            animation: breathe 6s ease-in-out infinite;
+            pointer-events: none;
+        }
+
+        @keyframes breathe {
+            0%, 100% { transform: scale(1); opacity: 0.9; }
+            50%      { transform: scale(1.08); opacity: 0.6; }
+        }
+
+        /* ---------- Main box ---------- */
         .container {
             position: relative;
             z-index: 1;
 
             width: 550px;
-            padding: 45px;
+            padding: 45px 45px 30px;
 
             text-align: center;
 
             background: white;
 
-            border-radius: 16px;
+            border-radius: 18px;
 
             box-shadow: 0 10px 35px rgba(0, 0, 0, 0.10);
+
+            overflow: hidden;
+
+            animation: cardEnter 0.7s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
-        h1 {
+        @keyframes cardEnter {
+            from { opacity: 0; transform: translate3d(0, 25px, 0); }
+            to   { opacity: 1; transform: translate3d(0, 0, 0); }
+        }
+
+        /* ---------- Top ribbon (greeting + clock) ---------- */
+        .ribbon {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+
+            padding: 8px 14px;
+            margin-bottom: 22px;
+
+            background: #f4f8ff;
+            border-radius: 100px;
+
+            font-size: 13px;
+            color: #2864c7;
+            font-weight: 600;
+
+            animation: fadeUp 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.05s both;
+        }
+
+        .ribbon .greeting {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .ribbon .clock {
+            display: flex;
+            align-items: center;
+            gap: 6px;
             color: #173b70;
-
-            font-size: 30px;
-
-            margin-bottom: 30px;
+            font-variant-numeric: tabular-nums;
         }
 
-        label {
-            display: block;
+        .pulse-dot {
+            width: 8px;
+            height: 8px;
+            background: #22c55e;
+            border-radius: 50%;
+            box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.2);
+            animation: pulse 2s ease-in-out infinite;
+        }
 
-            color: #333;
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); }
+            50%      { opacity: 0.5; transform: scale(0.85); }
+        }
 
-            font-size: 17px;
+        /* ---------- Headings ---------- */
+        h1 {
+            font-size: 32px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
 
+            background: linear-gradient(135deg, #173b70 0%, #2864c7 100%);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+
+            margin-bottom: 8px;
+
+            animation: fadeUp 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.1s both;
+        }
+
+        .subtitle {
+            color: #7c8aa0;
+            font-size: 14px;
+            margin-bottom: 32px;
+
+            animation: fadeUp 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.15s both;
+        }
+
+        @keyframes fadeUp {
+            from { opacity: 0; transform: translate3d(0, 15px, 0); }
+            to   { opacity: 1; transform: translate3d(0, 0, 0); }
+        }
+
+        /* ---------- Button row ---------- */
+        .btn-row {
+            display: flex;
+            gap: 14px;
+            justify-content: center;
             margin-bottom: 10px;
         }
 
-        select {
-            width: 80%;
-
-            padding: 12px;
-
-            font-size: 16px;
-
-            border: 1px solid #b8c7dc;
-
-            border-radius: 8px;
-
-            outline: none;
-
-            background: white;
-
-            color: #333;
-
-            cursor: pointer;
-        }
-
-        select:focus {
-            border-color: #2864c7;
-        }
-
-        .timetable-btn {
-            display: inline-block;
-
-            margin-top: 25px;
-
-            padding: 12px 24px;
-
-            background: #2864c7;
-
-            color: white;
-
-            text-decoration: none;
-
-            border-radius: 8px;
-
-            font-size: 16px;
-
-            transition: 0.3s;
-        }
-        .timetable-btn:hover {
-            background: #173f85;
-
-            transform: translateY(-2px);
-        }
-
+        .timetable-btn,
         .admin-btn {
-            display: inline-block;
+            flex: 1;
 
-            margin-top: 25px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
 
-            padding: 12px 24px;
+            padding: 14px 20px;
 
             background: #2864c7;
-
             color: white;
-
             text-decoration: none;
 
-            border-radius: 8px;
+            border-radius: 12px;
 
-            font-size: 16px;
+            font-size: 15px;
+            font-weight: 600;
 
-            transition: 0.3s;
+            position: relative;
+            overflow: hidden;
+
+            will-change: transform;
+            transform: translate3d(0, 0, 0);
+            transition: background 0.3s ease,
+                        transform 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+                        box-shadow 0.3s cubic-bezier(0.16, 1, 0.3, 1);
         }
 
+        .timetable-btn { animation: fadeUp 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.2s both; }
+        .admin-btn     { animation: fadeUp 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.28s both; }
+
+        .timetable-btn .icon,
+        .admin-btn .icon {
+            font-size: 18px;
+            transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .timetable-btn:hover .icon,
+        .admin-btn:hover .icon {
+            transform: scale(1.2) rotate(-6deg);
+        }
+
+        .timetable-btn:hover,
         .admin-btn:hover {
             background: #173f85;
+            transform: translate3d(0, -3px, 0);
+            box-shadow: 0 12px 24px rgba(40, 100, 199, 0.35);
+        }
 
-            transform: translateY(-2px);
+        .timetable-btn:active,
+        .admin-btn:active {
+            transform: translate3d(0, -1px, 0);
+            box-shadow: 0 4px 10px rgba(40, 100, 199, 0.3);
+        }
+
+        /* Notification dot on Admin */
+        .admin-btn .notif {
+            position: absolute;
+            top: 10px;
+            right: 12px;
+            width: 9px;
+            height: 9px;
+            background: #ff4d4d;
+            border-radius: 50%;
+            box-shadow: 0 0 0 3px rgba(255, 77, 77, 0.25);
+            animation: pulse 1.8s ease-in-out infinite;
+        }
+
+        /* Ripple */
+        .ripple {
+            position: absolute;
+            border-radius: 50%;
+            transform: scale(0);
+            background: rgba(255, 255, 255, 0.55);
+            pointer-events: none;
+            animation: rippleAnim 0.6s ease-out;
+        }
+
+        @keyframes rippleAnim {
+            to {
+                transform: scale(4);
+                opacity: 0;
+            }
+        }
+
+        /* ---------- Wave divider ---------- */
+        .wave {
+            margin-top: 30px;
+            height: 26px;
+            overflow: hidden;
+            line-height: 0;
+        }
+
+        .wave svg {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+
+        .wave path {
+            fill: #eef4ff;
+        }
+
+        /* ---------- Copyright ---------- */
+        .copyright {
+            margin-top: 18px;
+            font-size: 12.5px;
+            color: #8b96a9;
+            letter-spacing: 0.2px;
+
+            animation: fadeUp 0.7s cubic-bezier(0.16, 1, 0.3, 1) 0.4s both;
+        }
+
+        .copyright strong {
+            background: linear-gradient(135deg, #2864c7, #173b70);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            font-weight: 700;
+        }
+
+        /* ---------- Help button ---------- */
+        .help-btn {
+            position: fixed;
+            bottom: 26px;
+            right: 26px;
+            z-index: 10;
+
+            width: 52px;
+            height: 52px;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            border-radius: 50%;
+
+            background: white;
+            border: 1px solid #dbe6f5;
+
+            color: #2864c7;
+            font-size: 22px;
+            font-weight: 800;
+            text-decoration: none;
+
+            box-shadow: 0 8px 22px rgba(40, 100, 199, 0.18);
+
+            transform: translate3d(0, 0, 0);
+            transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+                        box-shadow 0.3s cubic-bezier(0.16, 1, 0.3, 1),
+                        color 0.3s ease;
+        }
+
+        .help-btn:hover {
+            transform: translate3d(0, -4px, 0) scale(1.05);
+            box-shadow: 0 14px 30px rgba(40, 100, 199, 0.3);
+            color: #173b70;
+        }
+
+        .help-btn::after {
+            content: "Need help?";
+            position: absolute;
+            right: 62px;
+            top: 50%;
+            transform: translateY(-50%) translateX(8px);
+
+            padding: 7px 12px;
+            background: #173b70;
+            color: white;
+            font-size: 12px;
+            font-weight: 600;
+            border-radius: 8px;
+            white-space: nowrap;
+
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+
+        .help-btn:hover::after {
+            opacity: 1;
+            transform: translateY(-50%) translateX(0);
+        }
+
+        /* ---------- Reduced motion ---------- */
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation: none !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
+
+        /* ---------- Responsive ---------- */
+        @media (max-width: 560px) {
+            .container { padding: 34px 24px 24px; }
+            h1 { font-size: 24px; }
+            .btn-row { flex-direction: column; }
+            .ribbon { font-size: 12px; }
+            .help-btn { width: 46px; height: 46px; bottom: 18px; right: 18px; font-size: 20px; }
         }
     </style>
 
+    <!-- Glow ring -->
+    <div class="glow"></div>
+
     <div class="container">
 
+        <!-- Greeting + Live Clock -->
+        <div class="ribbon">
+            <span class="greeting">
+                <span class="pulse-dot"></span>
+                <span id="greetingText">Hello</span>
+            </span>
+            <span class="clock" id="clock">--:--:--</span>
+        </div>
+
         <h1>Time Table Management System</h1>
+        <p class="subtitle">Access your schedule in one click.</p>
 
-        <label for="course">Choose your course:</label>
+        <!-- Buttons -->
+        <div class="btn-row">
+            <a href="timetable.html" class="timetable-btn" id="studentBtn">
+                <span class="icon">🎓</span>
+                Student
+            </a>
+            <a href="login.html" class="admin-btn" id="adminBtn">
+                <span class="notif"></span>
+                <span class="icon">🛡️</span>
+                Admin
+            </a>
+        </div>
 
-        <select id="course" name="course">
+        <!-- Wave divider -->
+        <div class="wave">
+            <svg viewBox="0 0 500 26" preserveAspectRatio="none">
+                <path d="M0,15 C125,0 250,30 375,15 C450,6 480,12 500,15 L500,26 L0,26 Z"></path>
+            </svg>
+        </div>
 
-            <option value="">-- Select Course --</option>
-
-            <option value="cse">
-                Computer Science
-            </option>
-
-            <option value="mechanical">
-                Mechanical Engineering
-            </option>
-
-            <option value="civil">
-                Civil Engineering
-            </option>
-
-            <option value="ece">
-                Electronics Engineering
-            </option>
-
-        </select>
-
-        <label for="course">Choose your course:</label>
-        <select id="division" name="division">
-
-            <option value="">-- Select Division --</option>
-
-        </select>
-        <br>
-       <a href="#" class="timetable-btn" id="timetableBtn">
-    Go to Time Table
-</a>
-
-        <a href="login.html" class="admin-btn">
-            Go to Admin Panel
-        </a>
+        <!-- Copyright -->
+        <div class="copyright">
+            © 2025 <strong>Aishwarya</strong>. All Rights Reserved.
+        </div>
 
     </div>
 
-    
+    <!-- Help button -->
+    <a href="help.html" class="help-btn" title="Need help?">?</a>
 
     <script>
-
-    const course = document.getElementById("course");
-    const division = document.getElementById("division");
-    const timetableBtn = document.getElementById("timetableBtn");
-
-
-    // Course selection
-    course.addEventListener("change", function () {
-
-        // Clear previous divisions
-        division.innerHTML = '<option value="">-- Select Division --</option>';
-
-        if (course.value === "cse") {
-
-            division.innerHTML += `
-                <option value="cse-a">CSE-A</option>
-                <option value="cse-b">CSE-B</option>
-                <option value="cse-c">CSE-C</option>
-            `;
-
+        /* ---------- Live clock ---------- */
+        function updateClock() {
+            const now = new Date();
+            const hh = String(now.getHours()).padStart(2, "0");
+            const mm = String(now.getMinutes()).padStart(2, "0");
+            const ss = String(now.getSeconds()).padStart(2, "0");
+            document.getElementById("clock").textContent = `${hh}:${mm}:${ss}`;
         }
+        updateClock();
+        setInterval(updateClock, 1000);
 
-        else if (course.value === "mechanical") {
-
-            division.innerHTML += `
-                <option value="mech-a">MECH-A</option>
-                <option value="mech-b">MECH-B</option>
-            `;
-
+        /* ---------- Greeting based on time ---------- */
+        function updateGreeting() {
+            const h = new Date().getHours();
+            let greet = "Hello";
+            if (h < 12) greet = "Good morning";
+            else if (h < 17) greet = "Good afternoon";
+            else if (h < 21) greet = "Good evening";
+            else greet = "Good night";
+            document.getElementById("greetingText").textContent = greet;
         }
+        updateGreeting();
 
-        else if (course.value === "civil") {
+        /* ---------- Ripple effect ---------- */
+        function attachRipple(el) {
+            el.addEventListener("click", function (e) {
+                const rect = el.getBoundingClientRect();
+                const size = Math.max(rect.width, rect.height);
+                const x = e.clientX - rect.left - size / 2;
+                const y = e.clientY - rect.top - size / 2;
 
-            division.innerHTML += `
-                <option value="civil-a">CIVIL-A</option>
-                <option value="civil-b">CIVIL-B</option>
-            `;
+                const ripple = document.createElement("span");
+                ripple.className = "ripple";
+                ripple.style.width = ripple.style.height = size + "px";
+                ripple.style.left = x + "px";
+                ripple.style.top = y + "px";
 
+                el.appendChild(ripple);
+                setTimeout(() => ripple.remove(), 650);
+            });
         }
-
-        else if (course.value === "ece") {
-
-            division.innerHTML += `
-                <option value="ece-a">ECE-A</option>
-                <option value="ece-b">ECE-B</option>
-            `;
-
-        }
-
-    });
-
-
-    // Go to timetable
-    timetableBtn.addEventListener("click", function (event) {
-
-        event.preventDefault();
-
-        const selectedCourse = course.value;
-        const selectedDivision = division.value;
-
-
-        // Check course
-        if (selectedCourse === "") {
-
-            alert("Please select a course.");
-            return;
-
-        }
-
-
-        // Check division
-        if (selectedDivision === "") {
-
-            alert("Please select a division.");
-            return;
-
-        }
-
-
-        // Open timetable with selected course and division
-        window.location.href =
-            "timetable.html?course=" + selectedCourse +
-            "&division=" + selectedDivision;
-
-    });
-
-</script>
-
-
+        attachRipple(document.getElementById("studentBtn"));
+        attachRipple(document.getElementById("adminBtn"));
+    </script>
 
 </body>
+
 </html>

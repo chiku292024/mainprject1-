@@ -9,3 +9,17 @@ Yes , its time concuming for filling up the data but the output will be in you h
 
 
 Our future gole is add the teacher view side such taht teacher will get to konw where acutually there lecture are without looking in tiemtable of any class. Such tat it will be easy for the teachers to that .
+
+
+
+
+[![Architecture diagram](https://gitdiagram.com/diagram-badge.svg)](https://gitdiagram.com/chiku292024/mainprject1-?utm_source=readme&utm_medium=badge)
+
+[![Architecture diagram of chiku292024/mainprject1-](https://gitdiagram.com/chiku292024/mainprject1-/diagram.png)](https://gitdiagram.com/chiku292024/mainprject1-?utm_source=readme&utm_medium=picture)
+
+![alt text](diagram.png)
+
+
+OK so i have provideed you with all teh things require including flowchart the details code is there . Thank you.......
+
+Made By Aishwarya and Omkar...........
