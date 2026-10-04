@@ -11,6 +11,9 @@ Yes , its time concuming for filling up the data but the output will be in you h
 Our future gole is add the teacher view side such taht teacher will get to konw where acutually there lecture are without looking in tiemtable of any class. Such tat it will be easy for the teachers to that .
 
 
+We do added now the print ooption if some one wants to print the output he can easly print th eout put 
+
+
 
 
 [![Architecture diagram](https://gitdiagram.com/diagram-badge.svg)](https://gitdiagram.com/chiku292024/mainprject1-?utm_source=readme&utm_medium=badge)
